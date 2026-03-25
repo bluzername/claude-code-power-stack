@@ -31,6 +31,7 @@ case "$cmd" in
         echo "  ccs go 1                 Resume result #1 from last search"
         echo "  ccs go <session-id>      Resume by full session ID"
         echo "  ccs stats                Show conversation stats dashboard"
+        echo "  ccs doctor               Health check (Ghost, Ollama, index)"
         echo "  ccs ix                   Re-index all conversations"
         echo ""
         echo "Search flags:"
@@ -143,6 +144,104 @@ for path, cnt, msgs in top_projects:
     print(f'  {short:<28s} {cnt:>3} {bar}')
 print()
 " 2>&1
+        ;;
+    doctor|health|check)
+        OK='\033[0;32mOK\033[0m'
+        WARN='\033[1;33mWARN\033[0m'
+        FAIL='\033[0;31mFAIL\033[0m'
+        pass=0; fail=0
+
+        echo ""
+        echo -e "  \033[1mPower Stack Health Check\033[0m"
+        echo "  ========================="
+        echo ""
+
+        # Ghost binary
+        if command -v ghost &>/dev/null; then
+            echo -e "  $OK  ghost binary on PATH"
+            ((pass++))
+        else
+            echo -e "  $FAIL  ghost binary not found"
+            ((fail++))
+        fi
+
+        # Ghost MCP registered
+        if claude mcp list 2>&1 | grep -q "ghost"; then
+            echo -e "  $OK  Ghost MCP registered"
+            ((pass++))
+        else
+            echo -e "  $FAIL  Ghost MCP not registered (run: claude mcp add ghost -s user -- \$(which ghost) mcp)"
+            ((fail++))
+        fi
+
+        # Ollama running
+        if curl -s --max-time 2 http://localhost:11434/api/tags &>/dev/null; then
+            echo -e "  $OK  Ollama server running"
+            ((pass++))
+
+            # Embedding model
+            if curl -s http://localhost:11434/api/tags 2>/dev/null | grep -q "nomic-embed-text"; then
+                echo -e "  $OK  nomic-embed-text model available"
+                ((pass++))
+            else
+                echo -e "  $FAIL  nomic-embed-text model missing (run: ollama pull nomic-embed-text)"
+                ((fail++))
+            fi
+        else
+            echo -e "  $FAIL  Ollama not running (run: ollama serve)"
+            echo -e "  $WARN  skipping model check"
+            ((fail++))
+        fi
+
+        # cc-conversation-search
+        if command -v cc-conversation-search &>/dev/null; then
+            echo -e "  $OK  cc-conversation-search installed"
+            ((pass++))
+        else
+            echo -e "  $FAIL  cc-conversation-search not found"
+            ((fail++))
+        fi
+
+        # Search index
+        DB="${HOME}/.conversation-search/index.db"
+        if [ -f "$DB" ]; then
+            age_seconds=$(( $(date +%s) - $(stat -f%m "$DB" 2>/dev/null || stat -c%Y "$DB" 2>/dev/null || echo 0) ))
+            age_hours=$(( age_seconds / 3600 ))
+            if [ "$age_hours" -lt 24 ]; then
+                echo -e "  $OK  search index fresh (updated ${age_hours}h ago)"
+                ((pass++))
+            else
+                echo -e "  $WARN  search index stale (${age_hours}h old - run: ccs ix)"
+                ((pass++))
+            fi
+        else
+            echo -e "  $FAIL  search index missing (run: ccs ix)"
+            ((fail++))
+        fi
+
+        # ccs shortcut
+        if command -v ccs &>/dev/null; then
+            echo -e "  $OK  ccs shortcut on PATH"
+            ((pass++))
+        else
+            echo -e "  $FAIL  ccs not on PATH"
+            ((fail++))
+        fi
+
+        # Planning files in current directory
+        if [ -f "task_plan.md" ]; then
+            phase=$(grep -c "Status.*in_progress\|Status.*pending" task_plan.md 2>/dev/null || echo 0)
+            echo -e "  $OK  task_plan.md found in current dir ($phase phases remaining)"
+        fi
+
+        echo ""
+        echo "  -------------------------"
+        if [ "$fail" -eq 0 ]; then
+            echo -e "  \033[0;32mAll $pass checks passed.\033[0m"
+        else
+            echo -e "  $pass passed, \033[0;31m$fail issues found\033[0m"
+        fi
+        echo ""
         ;;
     ix|index|reindex)
         cc-conversation-search index --all

@@ -455,7 +455,7 @@ Coming back after days/weeks?
 | List recent sessions | `ccs ls` |
 | Resume session | `ccs go 1` (or `ccs go <session-id>`) |
 | Stats dashboard | `ccs stats` |
-| Check Ghost health | `ghost mcp status` |
+| Health check | `ccs doctor` |
 | Re-index conversations | `ccs ix` |
 
 ---

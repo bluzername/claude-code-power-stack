@@ -8,6 +8,7 @@ _ccs() {
         'ls:List recent sessions'
         'go:Resume a session by number or ID'
         'stats:Show conversation stats dashboard'
+        'doctor:Health check (Ghost, Ollama, index)'
         'ix:Re-index all conversations'
         'help:Show help'
     )

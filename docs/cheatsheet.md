@@ -20,8 +20,8 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | Resume result #1 | `ccs go 1` |
 | Resume by ID | `ccs go <session-id>` |
 | Stats dashboard | `ccs stats` |
+| Health check | `ccs doctor` |
 | Re-index | `ccs ix` |
-| Ghost health | `ghost mcp status` |
 
 ## Session Naming Convention
 
