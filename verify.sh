@@ -51,6 +51,7 @@ echo ""
 
 echo "Ghost MCP:"
 check "ghost mcp status passes" ghost mcp status
+check "ghost visible in claude mcp list" bash -c "claude mcp list 2>&1 | grep -q ghost"
 echo ""
 
 echo "cc-conversation-search:"

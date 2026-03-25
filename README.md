@@ -118,11 +118,31 @@ ln -sf $(go env GOPATH)/bin/ghost /usr/local/bin/ghost     # Linux
 </details>
 
 <details>
+<summary><b>Ghost MCP registered but not working (most common issue)</b></summary>
+
+`ghost mcp status` may report "All checks passed" but Ghost still doesn't appear in `claude mcp list` and tools fail with "Connection closed". This happens when `ghost mcp init` writes to a different config scope than Claude Code reads from.
+
+**Fix:**
+```bash
+# Remove any stale registrations
+claude mcp remove ghost -s user 2>/dev/null
+claude mcp remove ghost -s project 2>/dev/null
+
+# Re-register at user scope (works across all projects)
+claude mcp add ghost -s user -- $(which ghost) mcp
+
+# Verify it shows up
+claude mcp list 2>&1 | grep ghost
+```
+Then **restart Claude Code** (quit and relaunch - not just a new session).
+</details>
+
+<details>
 <summary><b>ghost mcp init fails or hangs</b></summary>
 
-Register manually:
+Use `claude mcp add` directly instead:
 ```bash
-claude mcp add ghost -- $(which ghost) mcp
+claude mcp add ghost -s user -- $(which ghost) mcp
 ```
 Then restart Claude Code.
 </details>
@@ -151,7 +171,14 @@ If not, re-run `./install.sh` from the repo directory.
 <details>
 <summary><b>Ghost MCP shows "not connected" in new session</b></summary>
 
-Ghost needs a full Claude Code restart (not just a new session). Quit and relaunch Claude Code. Verify with `ghost mcp status`.
+Ghost needs a full Claude Code restart (not just a new session). Quit and relaunch Claude Code.
+
+Verify with both commands - they check different things:
+```bash
+ghost mcp status          # Checks ghost binary and config
+claude mcp list | grep ghost  # Checks Claude Code actually sees it
+```
+Both must pass. If `ghost mcp status` passes but `claude mcp list` doesn't show ghost, see the "registered but not working" troubleshooting entry above.
 </details>
 
 ---

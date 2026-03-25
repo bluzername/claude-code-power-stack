@@ -26,9 +26,15 @@ fi
 
 echo ""
 
-# Remove MCP registration
+# Remove MCP registration (check both scopes)
 if command -v claude &>/dev/null; then
-    claude mcp remove ghost 2>/dev/null && info "Removed Ghost MCP registration" || warn "Ghost MCP not registered"
+    claude mcp remove ghost -s user 2>/dev/null && info "Removed Ghost MCP registration (user scope)" || true
+    claude mcp remove ghost -s project 2>/dev/null && info "Removed Ghost MCP registration (project scope)" || true
+    if ! claude mcp list 2>&1 | grep -q ghost; then
+        info "Ghost MCP fully removed"
+    else
+        warn "Ghost MCP may still be registered in another scope"
+    fi
 fi
 
 # Remove commands

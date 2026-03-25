@@ -65,7 +65,7 @@ echo ""
 # Step 1: Install Ghost
 # ------------------------------------------
 
-echo "--- Step 1/5: Ghost (persistent memory) ---"
+echo "--- Step 1/6: Ghost (persistent memory) ---"
 
 if command -v ghost &>/dev/null; then
     ok "Ghost already installed: $(ghost --version 2>/dev/null || echo 'unknown version')"
@@ -106,15 +106,37 @@ echo ""
 # Step 2: Register Ghost MCP
 # ------------------------------------------
 
-echo "--- Step 2/5: Register Ghost with Claude Code ---"
+echo "--- Step 2/6: Register Ghost with Claude Code ---"
 
 if command -v ghost &>/dev/null; then
-    info "Running ghost mcp init..."
-    if ghost mcp init 2>&1; then
-        ok "Ghost MCP registered"
+    GHOST_PATH="$(command -v ghost)"
+
+    # Remove any existing ghost registration to avoid conflicts.
+    # ghost mcp init and claude mcp add can write to different scopes
+    # (project vs user), causing ghost to appear registered but not
+    # actually show up in claude mcp list.
+    claude mcp remove ghost -s user 2>/dev/null || true
+    claude mcp remove ghost -s project 2>/dev/null || true
+
+    info "Registering Ghost MCP via claude mcp add..."
+    if claude mcp add ghost -s user -- "$GHOST_PATH" mcp 2>&1; then
+        ok "Ghost MCP registered (command: $GHOST_PATH mcp)"
     else
-        warn "ghost mcp init had issues. Trying manual registration..."
-        claude mcp add ghost -- "$(command -v ghost)" mcp 2>/dev/null && ok "Manual registration succeeded" || warn "Manual registration failed - register manually after install"
+        warn "claude mcp add failed. Trying ghost mcp init as fallback..."
+        if ghost mcp init 2>&1; then
+            ok "Ghost MCP registered via ghost mcp init"
+        else
+            fail "Could not register Ghost MCP. Register manually:"
+            fail "  claude mcp add ghost -s user -- $GHOST_PATH mcp"
+        fi
+    fi
+
+    # Verify registration actually worked
+    if claude mcp list 2>&1 | grep -q "ghost"; then
+        ok "Ghost confirmed in claude mcp list"
+    else
+        warn "Ghost not visible in claude mcp list. You may need to restart Claude Code."
+        warn "If still missing, run: claude mcp add ghost -s user -- $GHOST_PATH mcp"
     fi
 else
     warn "Ghost not on PATH - skipping MCP registration"
@@ -126,7 +148,7 @@ echo ""
 # Step 3: Install cc-conversation-search
 # ------------------------------------------
 
-echo "--- Step 3/5: cc-conversation-search (cross-project search) ---"
+echo "--- Step 3/6: cc-conversation-search (cross-project search) ---"
 
 if command -v cc-conversation-search &>/dev/null; then
     ok "cc-conversation-search already installed"
