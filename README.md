@@ -1,8 +1,17 @@
 # Claude Code Power Stack
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/bluzername/claude-code-power-stack/pulls)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)]()
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-compatible-D97757.svg)](https://docs.anthropic.com/en/docs/claude-code)
+
 **Stop losing context. Start every session where you left off.**
 
 A curated toolkit that gives [Claude Code](https://docs.anthropic.com/en/docs/claude-code) persistent memory, cross-project search, structured planning, and session management - so you never repeat work across projects.
+
+```bash
+git clone https://github.com/bluzername/claude-code-power-stack.git && cd claude-code-power-stack && ./install.sh
+```
 
 ---
 
