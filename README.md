@@ -68,10 +68,11 @@ flowchart LR
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
 - [Go 1.21+](https://go.dev/dl/) (for Ghost)
+- [Ollama](https://ollama.com/) with the `nomic-embed-text` model (required by Ghost for embeddings)
 - [uv](https://github.com/astral-sh/uv) (for cc-conversation-search) - or pip
 
 <details>
-<summary><b>Don't have Go or uv?</b> (click to expand)</summary>
+<summary><b>Don't have Go, Ollama, or uv?</b> (click to expand)</summary>
 
 ```bash
 # macOS (Homebrew)
@@ -83,8 +84,16 @@ brew install wcatz/tap/ghost
 
 # uv without Homebrew:
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Ollama (required - Ghost will crash without it)
+# Download from https://ollama.com/ or:
+brew install ollama
+ollama serve &          # Start the Ollama server
+ollama pull nomic-embed-text  # Download the embedding model Ghost needs
 ```
 </details>
+
+> **Important:** Ghost requires Ollama running with the `nomic-embed-text` model. Without it, Ghost's MCP server will start but immediately crash with "Connection closed". Make sure `ollama serve` is running before starting Claude Code.
 
 ### Install
 
@@ -127,6 +136,28 @@ cp rules/session-naming.md ~/.claude/rules/common/
 ```
 
 ### Troubleshooting
+
+<details>
+<summary><b>Ghost crashes with "Connection closed" (most common issue)</b></summary>
+
+Ghost requires [Ollama](https://ollama.com/) running locally with the `nomic-embed-text` embedding model. Without it, Ghost's MCP server starts but immediately crashes.
+
+**Fix:**
+```bash
+# Install Ollama if needed
+brew install ollama   # or download from https://ollama.com/
+
+# Start the server
+ollama serve &
+
+# Pull the embedding model
+ollama pull nomic-embed-text
+
+# Restart Claude Code
+```
+
+**Tip:** Add `ollama serve` to your login items or shell profile so it starts automatically.
+</details>
 
 <details>
 <summary><b>Ghost not found after install</b></summary>

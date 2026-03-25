@@ -47,6 +47,12 @@ check "ghost on PATH" command -v ghost
 check "cc-conversation-search on PATH" command -v cc-conversation-search
 check "ccs shortcut on PATH" command -v ccs
 check "claude on PATH" command -v claude
+check "ollama on PATH" command -v ollama
+echo ""
+
+echo "Ollama (required by Ghost):"
+check "ollama server running" bash -c "curl -s http://localhost:11434/api/tags >/dev/null 2>&1"
+check "nomic-embed-text model available" bash -c "curl -s http://localhost:11434/api/tags 2>/dev/null | grep -q nomic-embed-text"
 echo ""
 
 echo "Ghost MCP:"

@@ -46,6 +46,12 @@ if ! command -v uv &>/dev/null && ! command -v pip &>/dev/null; then
     MISSING=1
 fi
 
+if ! command -v ollama &>/dev/null; then
+    fail "Ollama not found. Ghost requires Ollama for embeddings."
+    fail "  Install: https://ollama.com/ or brew install ollama"
+    MISSING=1
+fi
+
 if [ "$MISSING" -eq 1 ]; then
     echo ""
     fail "Missing prerequisites. Install them and re-run."
@@ -103,10 +109,45 @@ fi
 echo ""
 
 # ------------------------------------------
-# Step 2: Register Ghost MCP
+# Step 2: Ensure Ollama + embedding model
 # ------------------------------------------
 
-echo "--- Step 2/6: Register Ghost with Claude Code ---"
+echo "--- Step 2/7: Ollama + embedding model (required by Ghost) ---"
+
+# Check if Ollama server is running
+if ! curl -s http://localhost:11434/api/tags &>/dev/null; then
+    info "Ollama server not running. Starting it..."
+    ollama serve &>/dev/null &
+    sleep 2
+    if curl -s http://localhost:11434/api/tags &>/dev/null; then
+        ok "Ollama server started"
+    else
+        warn "Could not start Ollama. Start it manually: ollama serve"
+        warn "Ghost will not work without Ollama running."
+    fi
+else
+    ok "Ollama server is running"
+fi
+
+# Pull the embedding model Ghost needs
+if curl -s http://localhost:11434/api/tags 2>/dev/null | grep -q "nomic-embed-text"; then
+    ok "nomic-embed-text model already available"
+else
+    info "Pulling nomic-embed-text model (Ghost needs this for embeddings)..."
+    if ollama pull nomic-embed-text 2>&1; then
+        ok "nomic-embed-text model ready"
+    else
+        warn "Could not pull nomic-embed-text. Run manually: ollama pull nomic-embed-text"
+    fi
+fi
+
+echo ""
+
+# ------------------------------------------
+# Step 3: Register Ghost MCP
+# ------------------------------------------
+
+echo "--- Step 3/7: Register Ghost with Claude Code ---"
 
 if command -v ghost &>/dev/null; then
     GHOST_PATH="$(command -v ghost)"
@@ -148,7 +189,7 @@ echo ""
 # Step 3: Install cc-conversation-search
 # ------------------------------------------
 
-echo "--- Step 3/6: cc-conversation-search (cross-project search) ---"
+echo "--- Step 4/7: cc-conversation-search (cross-project search) ---"
 
 if command -v cc-conversation-search &>/dev/null; then
     ok "cc-conversation-search already installed"
@@ -181,7 +222,7 @@ echo ""
 # Step 4: Copy commands, skills, and rules
 # ------------------------------------------
 
-echo "--- Step 4/6: Commands, skills, and rules ---"
+echo "--- Step 5/7: Commands, skills, and rules ---"
 
 # Commands
 mkdir -p "$CLAUDE_DIR/commands"
@@ -216,7 +257,7 @@ echo ""
 # Step 5: Install ccs shortcut
 # ------------------------------------------
 
-echo "--- Step 5/6: ccs shortcut (search in 3 keystrokes) ---"
+echo "--- Step 6/7: ccs shortcut (search in 3 keystrokes) ---"
 
 if [ -f "$SCRIPT_DIR/bin/ccs" ]; then
     if [ -d "/opt/homebrew/bin" ]; then
@@ -260,7 +301,7 @@ echo ""
 # Step 6: Update CLAUDE.md
 # ------------------------------------------
 
-echo "--- Step 6/6: Update CLAUDE.md ---"
+echo "--- Step 7/7: Update CLAUDE.md ---"
 
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 SNIPPET="$SCRIPT_DIR/templates/claude-md-snippet.md"
