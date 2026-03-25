@@ -32,6 +32,7 @@ case "$cmd" in
         echo "  ccs go <session-id>      Resume by full session ID"
         echo "  ccs stats                Show conversation stats dashboard"
         echo "  ccs doctor               Health check (Ghost, Ollama, index)"
+        echo "  ccs cheat                Quick reference card in terminal"
         echo "  ccs ix                   Re-index all conversations"
         echo ""
         echo "Search flags:"
@@ -241,6 +242,49 @@ print()
         else
             echo -e "  $pass passed, \033[0;31m$fail issues found\033[0m"
         fi
+        echo ""
+        ;;
+    cheat|ref|quickref)
+        B='\033[1m'     # bold
+        C='\033[0;36m'  # cyan
+        G='\033[0;32m'  # green
+        Y='\033[1;33m'  # yellow
+        P='\033[0;35m'  # purple
+        N='\033[0m'     # reset
+        echo ""
+        echo -e "${B}  Claude Code Power Stack - Quick Reference${N}"
+        echo "  ==========================================="
+        echo ""
+        echo -e "  ${Y}SESSION${N}"
+        echo -e "    /standup                Morning standup summary"
+        echo -e "    /rename-session         Name session: project-type-desc"
+        echo -e "    /plan                   Create task_plan.md + findings.md + progress.md"
+        echo ""
+        echo -e "  ${C}SEARCH${N}"
+        echo -e "    ccs \"query\"             Search all projects"
+        echo -e "    ccs here \"query\"        Search current project only"
+        echo -e "    ccs \"query\" -d 7        Last 7 days"
+        echo -e "    ccs \"query\" --since DATE  Since specific date"
+        echo ""
+        echo -e "  ${G}NAVIGATE${N}"
+        echo -e "    ccs go 1               Resume result #1 from last search"
+        echo -e "    ccs ls                  List recent sessions (7 days)"
+        echo -e "    ccs ls 30              List last 30 days"
+        echo ""
+        echo -e "  ${P}MAINTAIN${N}"
+        echo -e "    ccs stats              Usage dashboard"
+        echo -e "    ccs doctor             Health check"
+        echo -e "    ccs ix                 Re-index conversations"
+        echo -e "    ghost mcp status       Ghost MCP health"
+        echo ""
+        echo -e "  ${Y}PLANNING FILES (created by /plan)${N}"
+        echo -e "    task_plan.md           Phases, decisions, errors"
+        echo -e "    findings.md            Research notes (update every 2 searches!)"
+        echo -e "    progress.md            Session log"
+        echo ""
+        echo -e "  ${B}SESSION NAMING${N}  {project}-{type}-{descriptor}"
+        echo -e "  ${C}Types:${N} feat fix debug explore review plan research comms"
+        echo -e "  ${C}Example:${N} api-feat-auth-flow, mobile-fix-crash"
         echo ""
         ;;
     ix|index|reindex)

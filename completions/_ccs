@@ -6,6 +6,7 @@ _ccs() {
     local -a subcommands
     subcommands=(
         'here:Search current project only'
+        'cheat:Quick reference card in terminal'
         'ls:List recent sessions'
         'go:Resume a session by number or ID'
         'stats:Show conversation stats dashboard'
