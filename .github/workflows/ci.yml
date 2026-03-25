@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check shell scripts parse correctly
+        run: |
+          echo "Checking shell scripts..."
+          for f in install.sh verify.sh uninstall.sh update.sh bin/ccs; do
+            echo "  $f"
+            bash -n "$f"
+          done
+          echo "All scripts parse OK"
+
+      - name: Check markdown internal links
+        run: |
+          echo "Checking README.md internal links..."
+          # Extract anchor links from TOC and verify headings exist
+          grep -oP '\(#[a-z0-9-]+\)' README.md | tr -d '()' | while read -r anchor; do
+            heading="${anchor#\#}"
+            # GitHub converts headings: lowercase, spaces to -, strip special chars
+            if ! grep -iqP "^#{1,6}\s+.*$(echo "$heading" | sed 's/-/[- ]/g')" README.md; then
+              echo "  WARNING: anchor $anchor may be broken"
+            fi
+          done
+          echo "Link check done"
+
+      - name: Verify repo structure
+        run: |
+          echo "Checking required files exist..."
+          files=(
+            "install.sh"
+            "verify.sh"
+            "uninstall.sh"
+            "update.sh"
+            "bin/ccs"
+            "commands/rename-session.md"
+            "commands/standup.md"
+            "rules/session-naming.md"
+            "skills/planning-with-files/SKILL.md"
+            "templates/claude-md-snippet.md"
+            "completions/_ccs"
+            "completions/ccs.bash"
+            "docs/cheatsheet.md"
+            "docs/cheatsheet.pdf"
+            "LICENSE"
+          )
+          missing=0
+          for f in "${files[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "  MISSING: $f"
+              missing=$((missing + 1))
+            fi
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "$missing files missing!"
+            exit 1
+          fi
+          echo "All required files present"
+
+      - name: Check scripts are executable
+        run: |
+          for f in install.sh verify.sh uninstall.sh update.sh bin/ccs; do
+            if [ ! -x "$f" ]; then
+              echo "FAIL: $f is not executable"
+              exit 1
+            fi
+          done
+          echo "All scripts are executable"
