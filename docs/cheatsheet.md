@@ -10,6 +10,7 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 
 | What | Command |
 |------|---------|
+| Morning standup | `/standup` |
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
 | Search sessions | `ccs "query"` |

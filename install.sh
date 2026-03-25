@@ -226,10 +226,13 @@ echo "--- Step 5/7: Commands, skills, and rules ---"
 
 # Commands
 mkdir -p "$CLAUDE_DIR/commands"
-if [ -f "$SCRIPT_DIR/commands/rename-session.md" ]; then
-    cp "$SCRIPT_DIR/commands/rename-session.md" "$CLAUDE_DIR/commands/"
-    ok "Installed /rename-session command"
-else
+for cmd_file in rename-session.md standup.md; do
+    if [ -f "$SCRIPT_DIR/commands/$cmd_file" ]; then
+        cp "$SCRIPT_DIR/commands/$cmd_file" "$CLAUDE_DIR/commands/"
+        ok "Installed /${cmd_file%.md} command"
+    fi
+done
+if [ ! -f "$SCRIPT_DIR/commands/rename-session.md" ]; then
     warn "commands/rename-session.md not found in repo"
 fi
 

@@ -423,6 +423,9 @@ The most powerful tool in the stack for complex work. Based on [Manus](https://m
 ## Decision Tree
 
 ```
+Starting your day?
+  --> /standup (summarizes yesterday, shows active plans, suggests next steps)
+
 Starting a session?
   --> Ghost auto-loads context (SessionStart hook)
   --> Claude suggests /rename-session
@@ -449,6 +452,7 @@ Coming back after days/weeks?
 
 | Action | Command |
 |--------|---------|
+| Morning standup | `/standup` |
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
 | Search past sessions | `ccs "query"` |
@@ -474,6 +478,7 @@ claude-code-power-stack/
     _ccs                  # zsh tab-completion
     ccs.bash              # bash tab-completion
   commands/
+    standup.md            # /standup - morning standup with yourself
     rename-session.md     # /rename-session command
   skills/
     planning-with-files/  # /plan skill (full Manus-style planning)
