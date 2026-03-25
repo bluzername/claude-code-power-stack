@@ -19,6 +19,7 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | List last 30 days | `ccs ls 30` |
 | Resume result #1 | `ccs go 1` |
 | Resume by ID | `ccs go <session-id>` |
+| Stats dashboard | `ccs stats` |
 | Re-index | `ccs ix` |
 | Ghost health | `ghost mcp status` |
 

@@ -30,6 +30,7 @@ case "$cmd" in
         echo "  ccs ls 30               List sessions (last 30 days)"
         echo "  ccs go 1                 Resume result #1 from last search"
         echo "  ccs go <session-id>      Resume by full session ID"
+        echo "  ccs stats                Show conversation stats dashboard"
         echo "  ccs ix                   Re-index all conversations"
         echo ""
         echo "Search flags:"
@@ -81,6 +82,67 @@ case "$cmd" in
             # Full session ID passed directly
             exec claude --resume "$target"
         fi
+        ;;
+    stats)
+        DB="${HOME}/.conversation-search/index.db"
+        if [ ! -f "$DB" ]; then
+            echo "No search index found. Run: ccs ix"
+            exit 1
+        fi
+        python3 -c "
+import sqlite3, os
+from datetime import datetime, timedelta
+
+db = os.path.expanduser('~/.conversation-search/index.db')
+conn = sqlite3.connect(db)
+c = conn.cursor()
+
+# Overall stats
+c.execute('''SELECT COUNT(DISTINCT session_id), COUNT(*), COUNT(DISTINCT project_path)
+             FROM messages WHERE is_tool_noise = 0''')
+sessions, messages, projects = c.fetchone()
+
+# This week
+week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+c.execute('''SELECT COUNT(DISTINCT session_id), COUNT(*)
+             FROM messages WHERE is_tool_noise = 0 AND timestamp > ?''', (week_ago,))
+week_sessions, week_messages = c.fetchone()
+
+# Top projects by session count
+c.execute('''SELECT project_path, COUNT(DISTINCT session_id) as cnt, COUNT(*) as msgs
+             FROM messages WHERE is_tool_noise = 0
+             GROUP BY project_path ORDER BY cnt DESC LIMIT 8''')
+top_projects = c.fetchall()
+
+# Date range
+c.execute('''SELECT MIN(timestamp), MAX(timestamp) FROM messages WHERE is_tool_noise = 0''')
+earliest, latest = c.fetchone()
+earliest_date = earliest[:10] if earliest else '?'
+latest_date = latest[:10] if latest else '?'
+
+conn.close()
+
+# Display
+print()
+print('\033[1m  Claude Code Power Stack - Stats\033[0m')
+print('  ' + '=' * 38)
+print()
+print(f'  \033[1;36mTotal\033[0m     {sessions} sessions / {messages:,} messages')
+print(f'  \033[1;36mThis week\033[0m {week_sessions} sessions / {week_messages:,} messages')
+print(f'  \033[1;36mProjects\033[0m  {projects} tracked')
+print(f'  \033[1;36mRange\033[0m     {earliest_date} to {latest_date}')
+print()
+print('  \033[1mTop projects\033[0m')
+print('  ' + '-' * 38)
+for path, cnt, msgs in top_projects:
+    short = path.replace(os.path.expanduser('~'), '~') if path else '(unknown)'
+    # Truncate long paths from the left
+    if len(short) > 28:
+        short = '...' + short[-25:]
+    bar = '\033[0;32m' + '#' * min(cnt, 20) + '\033[0m'
+    print(f'  {short:<28s} {cnt:>3} {bar}')
+print()
+" 2>&1
         ;;
     ix|index|reindex)
         cc-conversation-search index --all

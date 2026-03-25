@@ -7,6 +7,7 @@ _ccs() {
     subcommands=(
         'ls:List recent sessions'
         'go:Resume a session by number or ID'
+        'stats:Show conversation stats dashboard'
         'ix:Re-index all conversations'
         'help:Show help'
     )

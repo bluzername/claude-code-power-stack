@@ -423,6 +423,7 @@ Coming back after days/weeks?
 | Search past sessions | `ccs "query"` |
 | List recent sessions | `ccs ls` |
 | Resume session | `ccs go 1` (or `ccs go <session-id>`) |
+| Stats dashboard | `ccs stats` |
 | Check Ghost health | `ghost mcp status` |
 | Re-index conversations | `ccs ix` |
 
