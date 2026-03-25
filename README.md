@@ -13,6 +13,10 @@ A curated toolkit that gives [Claude Code](https://docs.anthropic.com/en/docs/cl
 git clone https://github.com/bluzername/claude-code-power-stack.git && cd claude-code-power-stack && ./install.sh
 ```
 
+> **[Download the cheatsheet PDF](docs/cheatsheet.pdf)** - print it, pin it, or keep it open in a tab.
+
+**Jump to:** [What's in the Stack](#whats-in-the-stack) | [Quick Start](#quick-start) | [Your First 5 Minutes](#your-first-5-minutes) | [Usage Guide](#usage-guide) | [Deep Dive](#deep-dive-each-tool) | [Quick Reference](#quick-reference) | [FAQ](#faq)
+
 ---
 
 ## What's in the Stack
