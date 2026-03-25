@@ -7,13 +7,14 @@ Ghost MCP auto-captures decisions, mistakes, conventions, and patterns across al
 - Legacy MEMORY.md files are read-only archives; do not update them
 
 ### Cross-Session Search
-Find previous conversations:
+Find previous conversations using the `ccs` shortcut:
 ```bash
-cc-conversation-search search "<query>"
-cc-conversation-search search "<query>" --since 2025-03-01
-cc-conversation-search list --days 7
+ccs "<query>"              # search all sessions
+ccs "<query>" -d 7         # last 7 days only
+ccs ls                     # list recent sessions
+ccs go <session-id>        # resume a session
+ccs ix                     # re-index all conversations
 ```
-Use returned session ID with `claude --resume <session-id>` to continue.
 
 ### Session Naming
 Name sessions at the start of substantive work using `/rename-session`.

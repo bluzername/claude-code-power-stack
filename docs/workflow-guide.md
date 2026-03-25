@@ -53,7 +53,7 @@ Claude: Want me to name this? api-fix-users-500
 
 ```bash
 # You were working on something last week but can't remember which session
-cc-conversation-search search "database migration"
+ccs "database migration"
 # Shows: api-feat-db-migration (id: abc123...)
 
 # Option A: Resume exact session
@@ -75,7 +75,7 @@ claude
 > "What authentication approach have I used across my projects?"
 # Ghost has per-project decision records
 # cc-conversation-search can find relevant sessions:
-#   cc-conversation-search search "authentication"
+#   ccs "authentication"
 # Claude synthesizes across projects
 ```
 
@@ -92,7 +92,7 @@ You don't need to manually note "we chose library X because Y." Ghost captures t
 
 ### Re-index periodically
 ```bash
-cc-conversation-search index --all
+ccs ix
 ```
 Run this weekly or when you notice search results are stale.
 

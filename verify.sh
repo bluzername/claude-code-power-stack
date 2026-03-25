@@ -45,6 +45,7 @@ echo ""
 echo "Binaries:"
 check "ghost on PATH" command -v ghost
 check "cc-conversation-search on PATH" command -v cc-conversation-search
+check "ccs shortcut on PATH" command -v ccs
 check "claude on PATH" command -v claude
 echo ""
 

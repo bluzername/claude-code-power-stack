@@ -159,7 +159,7 @@ echo ""
 # Step 4: Copy commands, skills, and rules
 # ------------------------------------------
 
-echo "--- Step 4/5: Commands, skills, and rules ---"
+echo "--- Step 4/6: Commands, skills, and rules ---"
 
 # Commands
 mkdir -p "$CLAUDE_DIR/commands"
@@ -191,10 +191,38 @@ fi
 echo ""
 
 # ------------------------------------------
-# Step 5: Update CLAUDE.md
+# Step 5: Install ccs shortcut
 # ------------------------------------------
 
-echo "--- Step 5/5: Update CLAUDE.md ---"
+echo "--- Step 5/6: ccs shortcut (search in 3 keystrokes) ---"
+
+if [ -f "$SCRIPT_DIR/bin/ccs" ]; then
+    if [ -d "/opt/homebrew/bin" ]; then
+        cp "$SCRIPT_DIR/bin/ccs" /opt/homebrew/bin/ccs
+        chmod +x /opt/homebrew/bin/ccs
+        ok "Installed ccs to /opt/homebrew/bin/ccs"
+    elif [ -d "/usr/local/bin" ]; then
+        cp "$SCRIPT_DIR/bin/ccs" /usr/local/bin/ccs
+        chmod +x /usr/local/bin/ccs
+        ok "Installed ccs to /usr/local/bin/ccs"
+    else
+        mkdir -p "$HOME/.local/bin"
+        cp "$SCRIPT_DIR/bin/ccs" "$HOME/.local/bin/ccs"
+        chmod +x "$HOME/.local/bin/ccs"
+        ok "Installed ccs to ~/.local/bin/ccs"
+        warn "Make sure ~/.local/bin is on your PATH"
+    fi
+else
+    warn "bin/ccs not found in repo"
+fi
+
+echo ""
+
+# ------------------------------------------
+# Step 6: Update CLAUDE.md
+# ------------------------------------------
+
+echo "--- Step 6/6: Update CLAUDE.md ---"
 
 CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 SNIPPET="$SCRIPT_DIR/templates/claude-md-snippet.md"
@@ -228,7 +256,10 @@ echo "  3. Start a session and try: /rename-session"
 echo "  4. For complex tasks, try: /plan"
 echo ""
 echo "Quick reference:"
-echo "  Search sessions:  cc-conversation-search search \"<query>\""
-echo "  Resume session:   claude --resume <session-id>"
+echo "  Search sessions:  ccs <query>"
+echo "  Search last week: ccs <query> -d 7"
+echo "  List recent:      ccs ls"
+echo "  Resume session:   ccs go <session-id>"
+echo "  Re-index:         ccs ix"
 echo "  Ghost health:     ghost mcp status"
 echo ""

@@ -12,12 +12,14 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 |------|---------|
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
-| Search sessions | `cc-conversation-search search "query"` |
-| Search with dates | `cc-conversation-search search "query" --since 2025-03-01` |
-| List recent | `cc-conversation-search list --days 7` |
-| Resume session | `claude --resume <session-id>` |
+| Search sessions | `ccs "query"` |
+| Search last N days | `ccs "query" -d 7` |
+| Search since date | `ccs "query" --since 2025-03-01` |
+| List recent | `ccs ls` |
+| List last 30 days | `ccs ls 30` |
+| Resume session | `ccs go <session-id>` |
+| Re-index | `ccs ix` |
 | Ghost health | `ghost mcp status` |
-| Re-index | `cc-conversation-search index --all` |
 
 ## Session Naming Convention
 
@@ -57,12 +59,12 @@ Context window = RAM (volatile). Planning files = disk (persistent).
 
 ```bash
 # Find session
-cc-conversation-search search "auth migration"
+ccs "auth migration"
 
-# Option A: Resume exact session
-claude --resume <session-id>
+# Resume it
+ccs go <session-id>
 
-# Option B: Start fresh (Ghost + planning files restore context)
+# Or start fresh (Ghost + planning files restore context)
 cd ~/my-project && claude
 ```
 
@@ -71,7 +73,7 @@ cd ~/my-project && claude
 ```
 Complex task?  --> /plan
 Simple task?   --> just do it (Ghost captures silently)
-Find old work? --> cc-conversation-search search "topic"
+Find old work? --> ccs "topic"
 Back after days? --> planning files = instant recovery
 ```
 

@@ -130,7 +130,7 @@ Ghost silently records decisions in the background. If you used `/plan`, Claude 
 
 ```bash
 # Option A: Search for the session
-cc-conversation-search search "auth flow"
+ccs "auth flow"
 claude --resume <session-id>
 
 # Option B: Start fresh in the same project dir
@@ -171,24 +171,27 @@ ghost search "auth"     # Search memories from terminal
 
 A CLI tool that indexes all your Claude Code conversations and lets you search across projects.
 
-**Usage:**
+**Usage** (via `ccs` shortcut - installed to your PATH):
 ```bash
 # Search by topic
-cc-conversation-search search "database migration"
+ccs "database migration"
 
 # Search with date filter
-cc-conversation-search search "auth" --since 2025-03-01
+ccs "auth" --since 2025-03-01
+
+# Search last 7 days only
+ccs "auth" -d 7
 
 # List recent sessions
-cc-conversation-search list --days 7
+ccs ls
 
 # Resume a found session
-claude --resume <session-id>
+ccs go <session-id>
 ```
 
 **The index updates automatically** before each search (JIT indexing). For a full re-index:
 ```bash
-cc-conversation-search index --all
+ccs ix
 ```
 
 ### /rename-session - Session Naming
@@ -288,7 +291,7 @@ Simple task or quick question?
   --> Just do it. Ghost captures decisions silently.
 
 Need to find old work?
-  --> cc-conversation-search search "<topic>"
+  --> ccs "<topic>"
   --> claude --resume <session-id>
 
 Coming back after days/weeks?
@@ -304,11 +307,11 @@ Coming back after days/weeks?
 |--------|---------|
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
-| Search past sessions | `cc-conversation-search search "query"` |
-| List recent sessions | `cc-conversation-search list --days 7` |
-| Resume session | `claude --resume <session-id>` |
+| Search past sessions | `ccs "query"` |
+| List recent sessions | `ccs ls` |
+| Resume session | `ccs go <session-id>` |
 | Check Ghost health | `ghost mcp status` |
-| Re-index conversations | `cc-conversation-search index --all` |
+| Re-index conversations | `ccs ix` |
 
 ---
 
@@ -319,6 +322,8 @@ claude-code-power-stack/
   install.sh              # One-command setup
   verify.sh               # Post-install verification
   uninstall.sh            # Clean removal
+  bin/
+    ccs                   # Search shortcut (3 keystrokes)
   commands/
     rename-session.md     # /rename-session command
   skills/

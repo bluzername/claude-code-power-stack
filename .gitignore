@@ -15,3 +15,4 @@ out/
 
 # Generated (keep PDFs in repo for easy access)
 # docs/cheatsheet.pdf
+.claude/
