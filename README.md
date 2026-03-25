@@ -286,7 +286,8 @@ claude
 
 ## Deep Dive: Each Tool
 
-### Ghost - Persistent Memory
+<details>
+<summary><b>Ghost - Persistent Memory</b> (click to expand)</summary>
 
 Ghost is an MCP server that gives Claude Code unlimited, categorized memory with importance scoring and time decay.
 
@@ -309,113 +310,57 @@ Ghost is an MCP server that gives Claude Code unlimited, categorized memory with
 ghost mcp status        # Check integration health
 ghost search "auth"     # Search memories from terminal
 ```
+</details>
 
-### cc-conversation-search - Find Any Session
+<details>
+<summary><b>cc-conversation-search - Find Any Session</b> (click to expand)</summary>
 
 A CLI tool that indexes all your Claude Code conversations and lets you search across projects.
 
 **Usage** (via `ccs` shortcut - installed to your PATH):
 ```bash
-# Search by topic
-ccs "database migration"
-
-# Search with date filter
-ccs "auth" --since 2025-03-01
-
-# Search last 7 days only
-ccs "auth" -d 7
-
-# List recent sessions
-ccs ls
-
-# Resume a found session
-ccs go <session-id>
+ccs "database migration"       # Search by topic
+ccs "auth" --since 2025-03-01  # Search with date filter
+ccs "auth" -d 7                # Search last 7 days only
+ccs ls                         # List recent sessions
+ccs go <session-id>            # Resume a found session
+ccs ix                         # Full re-index
 ```
 
-**The index updates automatically** before each search (JIT indexing). For a full re-index:
-```bash
-ccs ix
-```
+**The index updates automatically** before each search (JIT indexing).
+</details>
 
-### /rename-session - Session Naming
+<details>
+<summary><b>/rename-session - Session Naming</b> (click to expand)</summary>
 
 A Claude Code command that analyzes your current conversation and suggests a structured name.
 
 **Just say** `/rename-session` **at the start of any substantive work.** Claude will suggest a name like `api-feat-auth-flow` based on what you're working on.
 
 Why this matters: when you have 50+ sessions across 10 projects, `api-feat-auth-flow` is findable. `explain this function` is not.
+</details>
 
-### /plan - Planning with Files
+<details>
+<summary><b>/plan - Planning with Files</b> (click to expand)</summary>
 
 The most powerful tool in the stack for complex work. Based on [Manus](https://manus.im/)'s approach of treating the filesystem as external memory.
 
-**When to use /plan:**
-- Task has 3+ distinct steps
-- Task involves research then implementation
-- Session will be long (50+ tool calls)
-- Work spans multiple sessions
+**When to use /plan:** Task has 3+ steps, involves research then implementation, will be long (50+ tool calls), or spans multiple sessions.
 
-**When to skip /plan:**
-- Quick question or lookup
-- Single file edit
-- Simple, known fix
+**When to skip /plan:** Quick questions, single file edits, simple known fixes.
 
-#### The three files
+**The three files** (created in your project directory):
 
-**task_plan.md** - Your roadmap:
-```markdown
-## Goal
-Add JWT authentication to the API
+| File | What it stores | When to update |
+|------|---------------|----------------|
+| `task_plan.md` | Phases, decisions, errors | After each phase |
+| `findings.md` | Research notes, discoveries | After every 2 searches |
+| `progress.md` | Session log, test results | Throughout session |
 
-## Phases
-- [x] Phase 1: Research JWT libraries
-- [x] Phase 2: Implement token generation
-- [ ] Phase 3: Add middleware
-- [ ] Phase 4: Integration tests
+**The key discipline - the 2-action rule:** After every 2 searches, file reads, or web lookups, **immediately save findings to findings.md**. Claude's context window is like RAM. Planning files are your disk.
 
-## Decisions Made
-- Using jose library (maintained, supports RS256)
-- Tokens expire after 24h, refresh tokens after 7d
-
-## Errors Encountered
-- jsonwebtoken package deprecated - switched to jose
-```
-
-**findings.md** - Your research notebook:
-```markdown
-## Research Findings
-- jose library: github.com/panva/jose - 4.2k stars, active maintenance
-- JWT best practices: use RS256 for public APIs, HS256 for internal
-
-## Technical Decisions
-- RS256 for API tokens (allows public key verification)
-- Refresh token rotation (each use generates new refresh token)
-```
-
-**progress.md** - Your session log:
-```markdown
-## Session: 2025-03-25
-### Phase 1: Research JWT libraries [COMPLETE]
-- Evaluated jsonwebtoken, jose, fast-jwt
-- jose wins: maintained, spec-compliant, tree-shakeable
-
-### Phase 2: Implement token generation [COMPLETE]
-- Created src/auth/tokens.ts
-- Added RS256 key pair generation script
-- Unit tests passing (12/12)
-```
-
-#### The key discipline: the 2-action rule
-
-After every 2 searches, file reads, or web lookups - **immediately save findings to findings.md**. Claude's context window is like RAM. Planning files are your disk. Don't let important discoveries exist only in volatile memory.
-
-#### Context recovery
-
-When you come back to a project after days or weeks:
-1. Start Claude in the project directory
-2. Ghost loads project-level memory automatically
-3. If planning files exist, Claude reads them and knows exactly where you left off
-4. "You were on Phase 3, middleware. JWT generation is done. Next: add auth middleware to Express routes."
+**Context recovery:** When you come back after days or weeks, start Claude in the project directory. Ghost loads your decisions, planning files show exactly which phase you're on and what's next.
+</details>
 
 ---
 
@@ -463,6 +408,7 @@ Coming back after days/weeks?
 ```
 claude-code-power-stack/
   install.sh              # One-command setup
+  update.sh               # Update all components to latest
   verify.sh               # Post-install verification
   uninstall.sh            # Clean removal
   bin/
@@ -483,6 +429,12 @@ claude-code-power-stack/
 ---
 
 ## FAQ
+
+**How do I update to the latest versions?**
+```bash
+cd claude-code-power-stack && ./update.sh
+```
+This pulls the latest repo, upgrades Ghost and cc-conversation-search, and re-copies commands/skills/rules. Restart Claude Code after updating.
 
 **Does Ghost replace CLAUDE.md / MEMORY.md?**
 Ghost replaces the auto memory system (MEMORY.md). CLAUDE.md remains your project-level instructions file - Ghost doesn't touch it.
