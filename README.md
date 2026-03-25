@@ -1,6 +1,7 @@
 # Claude Code Power Stack
 
 [![CI](https://github.com/bluzername/claude-code-power-stack/actions/workflows/ci.yml/badge.svg)](https://github.com/bluzername/claude-code-power-stack/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/bluzername/claude-code-power-stack)](https://github.com/bluzername/claude-code-power-stack/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)]()
