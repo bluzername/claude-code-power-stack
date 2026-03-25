@@ -208,12 +208,15 @@ Ghost silently captures your decisions. Planning files log your progress. Just c
 **4. Days later - find and resume**
 ```bash
 $ ccs "rate limiting"
-  Session: api-feat-rate-limiting
-  Project: /Users/you/my-project
-  Time: 2025-03-20
-  Session: a1b2c3d4-...
+  [1] 2025-03-20  ~/my-project
+      a1b2c3d4-...
+      Add rate limiting to the API...
+  [2] 2025-03-18  ~/my-project
+      e5f6g7h8-...
+      Research rate limiting approaches...
+  2 sessions found. Resume with: ccs go 1
 
-$ ccs go a1b2c3d4-...
+$ ccs go 1    # just the number - no UUID copying
 ```
 
 Claude picks up right where you left off - Ghost loads your decisions, planning files show you're on Phase 3.
@@ -397,7 +400,7 @@ Coming back after days/weeks?
 | Start planning | `/plan` |
 | Search past sessions | `ccs "query"` |
 | List recent sessions | `ccs ls` |
-| Resume session | `ccs go <session-id>` |
+| Resume session | `ccs go 1` (or `ccs go <session-id>`) |
 | Check Ghost health | `ghost mcp status` |
 | Re-index conversations | `ccs ix` |
 

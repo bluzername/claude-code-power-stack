@@ -9,10 +9,11 @@ Ghost MCP auto-captures decisions, mistakes, conventions, and patterns across al
 ### Cross-Session Search
 Find previous conversations using the `ccs` shortcut:
 ```bash
-ccs "<query>"              # search all sessions
+ccs "<query>"              # search (results are numbered)
 ccs "<query>" -d 7         # last 7 days only
 ccs ls                     # list recent sessions
-ccs go <session-id>        # resume a session
+ccs go 1                   # resume result #1 from last search
+ccs go <session-id>        # resume by full ID
 ccs ix                     # re-index all conversations
 ```
 

@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 # ccs - Claude Code Search (shortcut for cc-conversation-search)
-# Usage:
-#   ccs <query>                  Search conversations
-#   ccs <query> -d 7             Search last 7 days
-#   ccs <query> --since 2025-03  Search since date
-#   ccs ls                       List recent sessions (7 days)
-#   ccs ls 30                    List recent sessions (30 days)
-#   ccs go <session-id>          Resume a session
-#   ccs ix                       Re-index all conversations
-#   ccs help                     Show this help
+#
+# Search results are numbered. Use "ccs go 1" to resume the first result.
+#
+#   ccs <query>              Search conversations (numbered results)
+#   ccs <query> -d 7         Search last 7 days
+#   ccs ls                   List recent sessions (7 days)
+#   ccs go 1                 Resume result #1 from last search
+#   ccs go <session-id>      Resume by full session ID
+#   ccs ix                   Re-index all conversations
+#   ccs help                 Show this help
 
 set -euo pipefail
+
+CCS_CACHE="${HOME}/.ccs_last_results"
 
 cmd="${1:-help}"
 shift 2>/dev/null || true
@@ -20,21 +23,22 @@ case "$cmd" in
         echo "ccs - Claude Code Search"
         echo ""
         echo "Usage:"
-        echo "  ccs <query>              Search conversations"
+        echo "  ccs <query>              Search (results are numbered)"
         echo "  ccs <query> -d 7         Search last 7 days"
         echo "  ccs <query> -p ~/proj    Search specific project"
         echo "  ccs ls                   List sessions (last 7 days)"
         echo "  ccs ls 30               List sessions (last 30 days)"
-        echo "  ccs go <session-id>      Resume a session"
+        echo "  ccs go 1                 Resume result #1 from last search"
+        echo "  ccs go <session-id>      Resume by full session ID"
         echo "  ccs ix                   Re-index all conversations"
         echo ""
-        echo "Search flags (pass through to cc-conversation-search):"
+        echo "Search flags:"
         echo "  -d, --days N             Limit to last N days"
         echo "  --since DATE             Start date (YYYY-MM-DD, yesterday, today)"
         echo "  --until DATE             End date"
         echo "  --date DATE              Specific date"
         echo "  -p, --project PATH       Filter by project path"
-        echo "  -n, --limit N            Max results (default: 20)"
+        echo "  -n, --limit N            Max results (default: 10)"
         ;;
     ls|list)
         days="${1:-7}"
@@ -42,18 +46,47 @@ case "$cmd" in
         ;;
     go|resume)
         if [ -z "${1:-}" ]; then
-            echo "Usage: ccs go <session-id>"
+            echo "Usage: ccs go <N>          (resume result #N from last search)"
+            echo "       ccs go <session-id> (resume by full ID)"
             exit 1
         fi
-        echo "Run: claude --resume $1"
-        claude --resume "$1"
+        target="$1"
+        shift
+
+        # If it's a small number, look up from cache
+        if [[ "$target" =~ ^[0-9]+$ ]] && [ "$target" -le 100 ] 2>/dev/null; then
+            if [ ! -f "$CCS_CACHE" ]; then
+                echo "No previous search results. Run a search first: ccs <query>"
+                exit 1
+            fi
+            line=$(sed -n "${target}p" "$CCS_CACHE")
+            if [ -z "$line" ]; then
+                total=$(wc -l < "$CCS_CACHE" | tr -d ' ')
+                echo "Result #$target not found. Last search had $total results."
+                exit 1
+            fi
+            session_id=$(echo "$line" | cut -f1)
+            project_path=$(echo "$line" | cut -f2)
+            echo "Resuming result #$target: $session_id"
+            echo "  Project: $project_path"
+            echo ""
+            if [ -n "$project_path" ] && [ -d "$project_path" ]; then
+                echo "cd $project_path && claude --resume $session_id"
+                cd "$project_path" && exec claude --resume "$session_id"
+            else
+                echo "claude --resume $session_id"
+                exec claude --resume "$session_id"
+            fi
+        else
+            # Full session ID passed directly
+            exec claude --resume "$target"
+        fi
         ;;
     ix|index|reindex)
         cc-conversation-search index --all
         ;;
     *)
-        # Default: treat as search query
-        # Reassemble args, translating short flags
+        # Default: search, show numbered results, cache session IDs
         args=()
         query="$cmd"
         while [ $# -gt 0 ]; do
@@ -64,6 +97,54 @@ case "$cmd" in
                 *)  args+=("$1"); shift ;;
             esac
         done
-        cc-conversation-search search "$query" "${args[@]}"
+
+        # Run search in JSON mode to extract session IDs
+        json_output=$(cc-conversation-search search "$query" --json --limit "${limit:-10}" "${args[@]}" 2>&1)
+
+        # Parse unique sessions and cache them
+        if command -v python3 &>/dev/null; then
+            echo "$json_output" | python3 -c "
+import json, sys
+from collections import OrderedDict
+
+try:
+    results = json.load(sys.stdin)
+except:
+    print('No results found.', file=sys.stderr)
+    sys.exit(0)
+
+# Deduplicate by session_id, preserve order
+seen = OrderedDict()
+for r in results:
+    sid = r.get('session_id', '')
+    if sid and sid not in seen:
+        seen[sid] = r
+
+# Write cache file
+cache_path = '$CCS_CACHE'
+with open(cache_path, 'w') as f:
+    for sid, r in seen.items():
+        proj = r.get('project_path', '')
+        f.write(f'{sid}\t{proj}\n')
+
+# Display numbered results
+for i, (sid, r) in enumerate(seen.items(), 1):
+    proj = r.get('project_path', '').replace('$HOME', '~')
+    ts = r.get('timestamp', '')[:16].replace('T', ' ')
+    snippet = r.get('context_snippet', '')[:120].replace('\n', ' ')
+    print(f'\033[1;33m[{i}]\033[0m {ts}  \033[0;36m{proj}\033[0m')
+    print(f'    {sid}')
+    if snippet:
+        print(f'    {snippet}...')
+    print()
+
+total = len(seen)
+if total > 0:
+    print(f'\033[0;32m{total} sessions found.\033[0m Resume with: ccs go 1')
+" 2>&1
+        else
+            # Fallback: just run normal search (no numbering)
+            cc-conversation-search search "$query" "${args[@]}"
+        fi
         ;;
 esac

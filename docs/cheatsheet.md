@@ -17,7 +17,8 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | Search since date | `ccs "query" --since 2025-03-01` |
 | List recent | `ccs ls` |
 | List last 30 days | `ccs ls 30` |
-| Resume session | `ccs go <session-id>` |
+| Resume result #1 | `ccs go 1` |
+| Resume by ID | `ccs go <session-id>` |
 | Re-index | `ccs ix` |
 | Ghost health | `ghost mcp status` |
 
@@ -58,11 +59,11 @@ Context window = RAM (volatile). Planning files = disk (persistent).
 ## Resuming Work
 
 ```bash
-# Find session
+# Find session (results are numbered)
 ccs "auth migration"
 
-# Resume it
-ccs go <session-id>
+# Resume result #1 - no UUID copying
+ccs go 1
 
 # Or start fresh (Ghost + planning files restore context)
 cd ~/my-project && claude
