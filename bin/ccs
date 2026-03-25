@@ -45,7 +45,80 @@ case "$cmd" in
         ;;
     ls|list)
         days="${1:-7}"
-        cc-conversation-search list --days "$days"
+        DB="${HOME}/.conversation-search/index.db"
+        if [ ! -f "$DB" ]; then
+            echo "No search index found. Run: ccs ix"
+            exit 1
+        fi
+        python3 -c "
+import sqlite3, os, sys
+from datetime import datetime, timedelta
+
+days = int(sys.argv[1])
+db = os.path.expanduser('~/.conversation-search/index.db')
+home = os.path.expanduser('~')
+conn = sqlite3.connect(db)
+c = conn.cursor()
+
+cutoff = (datetime.now() - timedelta(days=days)).isoformat()
+
+# Get sessions with stats
+c.execute('''
+    SELECT session_id, project_path,
+           COUNT(*) as msg_count,
+           MAX(timestamp) as last_ts
+    FROM messages
+    WHERE is_tool_noise = 0 AND timestamp > ?
+    GROUP BY session_id
+    ORDER BY last_ts DESC
+''', (cutoff,))
+sessions = c.fetchall()
+
+if not sessions:
+    print(f'No sessions in the last {days} days.')
+    conn.close()
+    sys.exit(0)
+
+# Cache for ccs go
+cache_path = os.path.expanduser('~/.ccs_last_results')
+with open(cache_path, 'w') as f:
+    for sid, proj, _, _ in sessions:
+        f.write(f'{sid}\t{proj or \"\"}\n')
+
+# Get first user message for each session as preview
+previews = {}
+for sid, _, _, _ in sessions:
+    c.execute('''
+        SELECT substr(full_content, 1, 80)
+        FROM messages
+        WHERE session_id = ? AND message_type = 'user'
+          AND is_tool_noise = 0 AND is_meta_conversation = 0
+          AND length(full_content) > 10
+          AND full_content NOT LIKE '<command-%'
+          AND full_content NOT LIKE 'Implement the following plan%'
+        ORDER BY timestamp ASC LIMIT 1
+    ''', (sid,))
+    row = c.fetchone()
+    previews[sid] = row[0].replace('\n', ' ').strip() if row else ''
+
+conn.close()
+
+print(f'\n  Sessions (last {days} days)\n')
+for i, (sid, proj, count, last_ts) in enumerate(sessions, 1):
+    proj_short = (proj or '').replace(home, '~')
+    ts = last_ts[:16].replace('T', ' ') if last_ts else ''
+    preview = previews.get(sid, '')
+    if len(preview) > 60:
+        preview = preview[:57] + '...'
+
+    print(f'\033[1;33m[{i}]\033[0m {ts}  \033[0;36m{proj_short}\033[0m  ({count} msgs)')
+    if preview:
+        print(f'    {preview}')
+    print()
+
+print(f'\033[0;32m{len(sessions)} sessions.\033[0m Resume with: ccs go 1')
+print()
+" "$days" 2>&1
         ;;
     go|resume)
         if [ -z "${1:-}" ]; then
