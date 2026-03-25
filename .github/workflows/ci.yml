@@ -15,7 +15,7 @@ jobs:
       - name: Check shell scripts parse correctly
         run: |
           echo "Checking shell scripts..."
-          for f in install.sh verify.sh uninstall.sh update.sh bin/ccs; do
+          for f in setup.sh install.sh verify.sh uninstall.sh update.sh bin/ccs; do
             echo "  $f"
             bash -n "$f"
           done
@@ -38,6 +38,7 @@ jobs:
         run: |
           echo "Checking required files exist..."
           files=(
+            "setup.sh"
             "install.sh"
             "verify.sh"
             "uninstall.sh"
@@ -69,7 +70,7 @@ jobs:
 
       - name: Check scripts are executable
         run: |
-          for f in install.sh verify.sh uninstall.sh update.sh bin/ccs; do
+          for f in setup.sh install.sh verify.sh uninstall.sh update.sh bin/ccs; do
             if [ ! -x "$f" ]; then
               echo "FAIL: $f is not executable"
               exit 1

@@ -12,7 +12,7 @@
 A curated toolkit that gives [Claude Code](https://docs.anthropic.com/en/docs/claude-code) persistent memory, cross-project search, structured planning, and session management - so you never repeat work across projects.
 
 ```bash
-git clone https://github.com/bluzername/claude-code-power-stack.git && cd claude-code-power-stack && ./install.sh
+curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/main/setup.sh | bash
 ```
 
 > **[Download the cheatsheet PDF](docs/cheatsheet.pdf)** - print it, pin it, or keep it open in a tab.
@@ -103,6 +103,12 @@ ollama pull nomic-embed-text  # Download the embedding model Ghost needs
 
 ### Install
 
+**One-liner** (clones to `~/.claude-power-stack` and runs the installer):
+```bash
+curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/main/setup.sh | bash
+```
+
+**Or clone manually:**
 ```bash
 git clone https://github.com/bluzername/claude-code-power-stack.git
 cd claude-code-power-stack
@@ -474,7 +480,8 @@ Coming back after days/weeks?
 
 ```
 claude-code-power-stack/
-  install.sh              # One-command setup
+  setup.sh                # curl one-liner remote installer
+  install.sh              # Full local setup (7 steps)
   update.sh               # Update all components to latest
   verify.sh               # Post-install verification
   uninstall.sh            # Clean removal
