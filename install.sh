@@ -238,6 +238,22 @@ else
     warn "bin/ccs not found in repo"
 fi
 
+# Install shell completions
+if [ -d "$SCRIPT_DIR/completions" ]; then
+    SHELL_NAME="$(basename "$SHELL")"
+    if [ "$SHELL_NAME" = "zsh" ]; then
+        ZSH_COMP_DIR="${HOME}/.zsh/completions"
+        mkdir -p "$ZSH_COMP_DIR"
+        cp "$SCRIPT_DIR/completions/_ccs" "$ZSH_COMP_DIR/_ccs"
+        ok "Installed zsh completions (restart shell or run: autoload -Uz compinit && compinit)"
+    elif [ "$SHELL_NAME" = "bash" ]; then
+        BASH_COMP_DIR="${HOME}/.local/share/bash-completion/completions"
+        mkdir -p "$BASH_COMP_DIR"
+        cp "$SCRIPT_DIR/completions/ccs.bash" "$BASH_COMP_DIR/ccs"
+        ok "Installed bash completions (restart shell to activate)"
+    fi
+fi
+
 echo ""
 
 # ------------------------------------------

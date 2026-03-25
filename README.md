@@ -415,7 +415,10 @@ claude-code-power-stack/
   verify.sh               # Post-install verification
   uninstall.sh            # Clean removal
   bin/
-    ccs                   # Search shortcut (3 keystrokes)
+    ccs                   # Search shortcut (numbered results)
+  completions/
+    _ccs                  # zsh tab-completion
+    ccs.bash              # bash tab-completion
   commands/
     rename-session.md     # /rename-session command
   skills/

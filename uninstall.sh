@@ -62,6 +62,11 @@ for dir in /opt/homebrew/bin /usr/local/bin "${HOME}/.local/bin"; do
     fi
 done
 
+# Remove shell completions
+[ -f "${HOME}/.zsh/completions/_ccs" ] && rm "${HOME}/.zsh/completions/_ccs" && info "Removed zsh completions"
+[ -f "${HOME}/.local/share/bash-completion/completions/ccs" ] && rm "${HOME}/.local/share/bash-completion/completions/ccs" && info "Removed bash completions"
+[ -f "${HOME}/.ccs_last_results" ] && rm "${HOME}/.ccs_last_results" && info "Removed ccs cache"
+
 echo ""
 echo "Done. Note:"
 echo "  - Ghost and cc-conversation-search binaries still installed"

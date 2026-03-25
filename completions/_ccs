@@ -1,0 +1,58 @@
+#compdef ccs
+
+# zsh completion for ccs (Claude Code Search)
+
+_ccs() {
+    local -a subcommands
+    subcommands=(
+        'ls:List recent sessions'
+        'go:Resume a session by number or ID'
+        'ix:Re-index all conversations'
+        'help:Show help'
+    )
+
+    if (( CURRENT == 2 )); then
+        # First arg: subcommand or search query
+        _describe 'subcommand' subcommands
+        return
+    fi
+
+    case "${words[2]}" in
+        go)
+            if (( CURRENT == 3 )); then
+                # Offer numbered results from cache
+                local cache="$HOME/.ccs_last_results"
+                if [[ -f "$cache" ]]; then
+                    local -a sessions
+                    local i=1
+                    while IFS=$'\t' read -r sid proj; do
+                        local label="${i} -- ${proj##*/} (${sid:0:8}...)"
+                        sessions+=("${i}:${label}")
+                        ((i++))
+                    done < "$cache"
+                    _describe 'session' sessions
+                fi
+            fi
+            ;;
+        ls)
+            if (( CURRENT == 3 )); then
+                local -a days=('7:Last week' '14:Last 2 weeks' '30:Last month' '90:Last quarter')
+                _describe 'days' days
+            fi
+            ;;
+        *)
+            # Search flags
+            _arguments \
+                '-d[Limit to last N days]:days:' \
+                '--days[Limit to last N days]:days:' \
+                '--since[Start date]:date:' \
+                '--until[End date]:date:' \
+                '--date[Specific date]:date:' \
+                '-p[Filter by project]:project:_directories' \
+                '--project[Filter by project]:project:_directories' \
+                '-n[Max results]:limit:'
+            ;;
+    esac
+}
+
+_ccs "$@"
