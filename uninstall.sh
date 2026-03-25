@@ -47,6 +47,15 @@ else
     warn "session-naming rule not found"
 fi
 
+# Remove ccs shortcut
+for dir in /opt/homebrew/bin /usr/local/bin "${HOME}/.local/bin"; do
+    if [ -f "$dir/ccs" ]; then
+        rm "$dir/ccs"
+        info "Removed ccs from $dir"
+        break
+    fi
+done
+
 echo ""
 echo "Done. Note:"
 echo "  - Ghost and cc-conversation-search binaries still installed"

@@ -156,6 +156,45 @@ Ghost needs a full Claude Code restart (not just a new session). Quit and relaun
 
 ---
 
+## Your First 5 Minutes
+
+After install, here's the full workflow in action:
+
+**1. Start a session and name it**
+```bash
+cd ~/my-project
+claude
+```
+> You: "Add rate limiting to the API"
+> Claude: Want me to name this session? I'd suggest: `api-feat-rate-limiting`
+> You: "yes"
+
+**2. Use /plan for complex work**
+> You: "/plan"
+
+Claude creates `task_plan.md`, `findings.md`, `progress.md` in your project dir and works phase by phase.
+
+**3. Work normally, then end the session**
+
+Ghost silently captures your decisions. Planning files log your progress. Just close the terminal when done.
+
+**4. Days later - find and resume**
+```bash
+$ ccs "rate limiting"
+  Session: api-feat-rate-limiting
+  Project: /Users/you/my-project
+  Time: 2025-03-20
+  Session: a1b2c3d4-...
+
+$ ccs go a1b2c3d4-...
+```
+
+Claude picks up right where you left off - Ghost loads your decisions, planning files show you're on Phase 3.
+
+That's it. Memory, search, planning - all working together.
+
+---
+
 ## Usage Guide
 
 ### Your new session lifecycle
