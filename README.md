@@ -15,13 +15,15 @@ A curated toolkit that gives [Claude Code](https://docs.anthropic.com/en/docs/cl
 | **Session naming** | "Which session was the auth refactor?" | `/rename-session` command with structured naming convention |
 | **Planning-with-files** | "I lost track halfway through" | File-based working memory for complex, multi-step tasks |
 
-### How they work together
+### The problem this solves
 
 ```
-Ghost ............... auto-captures decisions (passive, per-project)
-cc-conversation-search ... finds old sessions (active, cross-project)
-/rename-session ......... makes sessions findable by name (active, per-session)
-/plan ................... persistent working memory on disk (active, per-task)
+Without                              With Power Stack
+---------                            ----------------
+"What did I decide last week?"       Ghost auto-captured it
+"Which session had the auth work?"   ccs "auth" finds it in seconds
+"Where was I in this feature?"       task_plan.md says Phase 3, next: tests
+"I need to re-research everything"   findings.md has all your notes
 ```
 
 Ghost and cc-conversation-search handle the **between-sessions** problem.
@@ -36,6 +38,22 @@ Planning-with-files handles the **within-session** problem (long tasks that exha
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and working
 - [Go 1.21+](https://go.dev/dl/) (for Ghost)
 - [uv](https://github.com/astral-sh/uv) (for cc-conversation-search) - or pip
+
+<details>
+<summary><b>Don't have Go or uv?</b> (click to expand)</summary>
+
+```bash
+# macOS (Homebrew)
+brew install go
+brew install uv
+
+# Or skip Go entirely - install Ghost via Homebrew instead:
+brew install wcatz/tap/ghost
+
+# uv without Homebrew:
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+</details>
 
 ### Install
 
@@ -76,6 +94,56 @@ cp rules/session-naming.md ~/.claude/rules/common/
 ```bash
 ./verify.sh
 ```
+
+### Troubleshooting
+
+<details>
+<summary><b>Ghost not found after install</b></summary>
+
+Go installs binaries to `$(go env GOPATH)/bin`. If that's not on your PATH:
+```bash
+# Quick fix - symlink to a PATH directory
+ln -sf $(go env GOPATH)/bin/ghost /opt/homebrew/bin/ghost  # macOS
+ln -sf $(go env GOPATH)/bin/ghost /usr/local/bin/ghost     # Linux
+```
+</details>
+
+<details>
+<summary><b>ghost mcp init fails or hangs</b></summary>
+
+Register manually:
+```bash
+claude mcp add ghost -- $(which ghost) mcp
+```
+Then restart Claude Code.
+</details>
+
+<details>
+<summary><b>ccs shows no results</b></summary>
+
+The index might be empty or stale. Re-index all conversations:
+```bash
+ccs ix
+```
+If still empty, check that `~/.claude/projects/` contains `.jsonl` conversation files.
+</details>
+
+<details>
+<summary><b>/plan or /rename-session not showing up</b></summary>
+
+Restart Claude Code after install. If still missing, check the files exist:
+```bash
+ls ~/.claude/commands/rename-session.md
+ls ~/.claude/skills/planning-with-files/SKILL.md
+```
+If not, re-run `./install.sh` from the repo directory.
+</details>
+
+<details>
+<summary><b>Ghost MCP shows "not connected" in new session</b></summary>
+
+Ghost needs a full Claude Code restart (not just a new session). Quit and relaunch Claude Code. Verify with `ghost mcp status`.
+</details>
 
 ---
 
