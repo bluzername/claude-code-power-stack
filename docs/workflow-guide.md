@@ -1,100 +1,202 @@
 # Workflow Guide
 
-A detailed walkthrough of how the Claude Code Power Stack fits into your daily development workflow.
+How the Claude Code Power Stack fits into your daily development workflow.
 
-## The Four Layers
-
-Your stack has four layers of memory and context:
+## The Stack at a Glance
 
 | Layer | Role | Activation |
 |-------|------|-----------|
-| **Ghost** | Auto-captures decisions, mistakes, patterns per project | Passive (MCP + SessionStart hook) |
-| **cc-conversation-search** | Finds old sessions across all projects | Active (you search when needed) |
-| **/rename-session** | Makes sessions findable by name | Active (you name at session start) |
-| **/plan** | Persistent working memory for complex tasks | Active (you invoke for multi-step work) |
+| **Ghost** | Auto-captures decisions, mistakes, patterns | Passive (MCP + SessionStart hook) |
+| **ccs** | Search, list, resume, stats, health checks | Active (you run commands) |
+| **/rename-session** | Makes sessions findable by name | Active (at session start) |
+| **/plan** | Persistent working memory for complex tasks | Active (for multi-step work) |
+| **/standup** | Morning summary of yesterday + active plans | Active (start of day) |
 
-Ghost and cc-conversation-search solve the **between-sessions** problem.
-Planning-with-files solves the **within-session** problem.
+Ghost and ccs solve the **between-sessions** problem.
+/plan solves the **within-session** problem.
+/standup ties them all together.
+
+## Daily Workflow
+
+### Morning
+
+```bash
+cd ~/projects/my-api
+claude
+```
+> You: "/standup"
+
+Claude checks your recent sessions (via `ccs ls`), reads any active planning files, loads Ghost context, and gives you a summary:
+
+```
+Standup - 2025-03-26
+========================
+Yesterday:
+- api: Implemented JWT token generation (Phase 2 complete)
+
+In progress:
+- api: Phase 3 of task_plan.md - Add auth middleware
+
+Suggested next:
+- Continue Phase 3, then integration tests
+```
+
+### Starting work
+
+Claude suggests a session name. Accept or adjust:
+> Claude: Want me to name this session? I'd suggest: `api-feat-jwt-middleware`
+> You: "yes"
+
+For complex tasks (3+ steps), activate planning:
+> You: "/plan"
+
+This creates `task_plan.md`, `findings.md`, `progress.md` in your project. Claude works phase by phase and updates these as it goes.
+
+### During work
+
+Nothing to do. Ghost silently captures decisions. If /plan is active, Claude updates the planning files as phases complete.
+
+**One habit to build:** if you're doing research (reading docs, searching code, exploring options), tell Claude to update `findings.md` after every 2 lookups. Context window = RAM. Planning files = disk.
+
+### End of day
+
+Just close the terminal. Everything is already saved:
+- Ghost has your decisions
+- Planning files have your progress
+- The session name makes it searchable
+
+## Searching and Resuming
+
+### Find sessions
+
+```bash
+ccs "jwt auth"              # Search all projects
+ccs here "auth"             # Search current project only
+ccs "auth" -d 7             # Last 7 days
+ccs "auth" --since 2025-03  # Since a date
+```
+
+Results are numbered:
+```
+[1] 2025-03-25 14:00  ~/projects/api  (198 msgs)
+    Add JWT authentication to the API...
+[2] 2025-03-23 10:30  ~/projects/api  (45 msgs)
+    Research JWT library options...
+2 sessions. Resume with: ccs go 1
+```
+
+### Resume
+
+```bash
+ccs go 1                    # Resume result #1 (works after search or ls)
+ccs go a1b2c3d4-...         # Resume by full session ID
+```
+
+### List recent sessions
+
+```bash
+ccs ls                      # Last 7 days (numbered, with previews)
+ccs ls 30                   # Last 30 days
+```
+
+## Monitoring
+
+### Usage stats
+
+```bash
+ccs stats
+```
+Shows total sessions, messages, projects tracked, activity this week, and a bar chart of most active projects.
+
+### Health check
+
+```bash
+ccs doctor
+```
+Checks Ghost binary, MCP registration, Ollama server, embedding model, cc-conversation-search, index freshness, and ccs shortcut. Shows OK/FAIL with fix commands for each.
+
+### Quick reference
+
+```bash
+ccs cheat
+```
+Color-coded cheat sheet in your terminal - every command organized by category. No need to open GitHub or the PDF.
 
 ## Workflow Examples
 
-### Example 1: New feature development
+### New feature
 
 ```
-cd ~/projects/my-api
-claude
+cd ~/projects/api && claude
 
-> "Add JWT authentication to the API"
-Claude: Want me to name this session? I'd suggest: api-feat-jwt-auth
+> "Add rate limiting to the API"
+> Claude suggests: api-feat-rate-limiting
 > "yes, and /plan"
 
---> Claude creates task_plan.md, findings.md, progress.md
---> Researches JWT libraries, logs findings
---> Implements phase by phase
---> Ghost silently records decisions along the way
+Claude creates planning files, researches options,
+implements phase by phase. Ghost captures decisions.
+You close the terminal when done.
 ```
 
-### Example 2: Quick bug fix
+### Quick bug fix
 
 ```
-cd ~/projects/my-api
-claude
+cd ~/projects/api && claude
 
 > "Fix the 500 error on /users endpoint"
-Claude: Want me to name this? api-fix-users-500
+> Claude suggests: api-fix-users-500
 > "sure"
 
---> No /plan needed for a focused fix
---> Ghost captures what the bug was and how it was fixed
---> Session name makes it findable later
+No /plan needed. Ghost captures the fix.
+Session name makes it findable.
 ```
 
-### Example 3: Resuming interrupted work
+### Resuming after time away
 
 ```bash
-# You were working on something last week but can't remember which session
-ccs "database migration"
-# Shows: api-feat-db-migration (id: abc123...)
+# What was I doing?
+ccs here "migration"
+# [1] 2025-03-20  ~/projects/api  (312 msgs)
+#     Database migration for user table...
 
-# Option A: Resume exact session
-claude --resume abc123
-
-# Option B: Start fresh (Ghost + planning files provide context)
-cd ~/projects/my-api
-claude
-> "Continue the database migration work"
-# Ghost loads project context
-# If /plan was used, Claude reads task_plan.md and picks up at the right phase
+ccs go 1
+# Claude picks up at Phase 3 - Ghost loads decisions,
+# task_plan.md shows remaining phases
 ```
 
-### Example 4: Cross-project research
+### Cross-project research
 
-```
-claude
-
-> "What authentication approach have I used across my projects?"
+```bash
+# What auth approaches have I used?
+ccs "authentication"
+# Shows sessions from api, mobile, infra projects
 # Ghost has per-project decision records
-# cc-conversation-search can find relevant sessions:
-#   ccs "authentication"
-# Claude synthesizes across projects
+# Claude synthesizes across all of them
 ```
 
 ## Tips
 
-### Name sessions early
-Do it in the first message. `api-feat-jwt-auth` is findable months later. `help me with this code` is not.
+**Name sessions immediately.** `api-feat-jwt-auth` is findable months later. `help me with this code` is not.
 
-### Use /plan for anything over 10 minutes
-The overhead of creating three files is 30 seconds. The payoff is: you never lose context on long tasks, and you can resume after any interruption.
+**Use /plan for anything over 10 minutes.** The overhead is 30 seconds. The payoff: you never lose context on long tasks.
 
-### Trust Ghost for decisions
-You don't need to manually note "we chose library X because Y." Ghost captures this automatically. Focus your energy on the planning files for structured work.
+**Trust Ghost for decisions.** Don't manually note "we chose library X because Y." Ghost captures this. Save your energy for planning files.
 
-### Re-index periodically
+**Run `ccs doctor` when something feels off.** It checks everything in 2 seconds.
+
+**Run `ccs ix` weekly.** The index auto-updates before searches, but a full re-index catches any gaps.
+
+**Planning files are yours.** They live in your project directory. Read them yourself, share with teammates, or use as documentation.
+
+## Updating
+
 ```bash
-ccs ix
+cd ~/.claude-power-stack && ./update.sh
 ```
-Run this weekly or when you notice search results are stale.
 
-### The planning files are yours
-They live in your project directory, not in Claude's config. You can read them yourself, share them with teammates, or use them as documentation for what was done and why.
+Or re-run the one-liner:
+```bash
+curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/main/setup.sh | bash
+```
+
+Both pull the latest repo, upgrade Ghost + cc-conversation-search, and refresh all commands/skills/completions. Shows a changelog of what's new.

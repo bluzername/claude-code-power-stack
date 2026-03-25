@@ -15,7 +15,7 @@ A curated toolkit that gives [Claude Code](https://docs.anthropic.com/en/docs/cl
 curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/main/setup.sh | bash
 ```
 
-> **[Download the cheatsheet PDF](docs/cheatsheet.pdf)** - print it, pin it, or keep it open in a tab.
+> **[Cheatsheet PDF](docs/cheatsheet.pdf)** (print it) | **[Workflow Guide](docs/workflow-guide.md)** (read it) | `ccs cheat` (in your terminal)
 
 **Jump to:** [What's in the Stack](#whats-in-the-stack) | [Quick Start](#quick-start) | [Your First 5 Minutes](#your-first-5-minutes) | [Usage Guide](#usage-guide) | [Deep Dive](#deep-dive-each-tool) | [Quick Reference](#quick-reference) | [FAQ](#faq)
 
