@@ -467,7 +467,8 @@ Coming back after days/weeks?
 | Morning standup | `/standup` |
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
-| Search past sessions | `ccs "query"` |
+| Search all projects | `ccs "query"` |
+| Search current project | `ccs here "query"` |
 | List recent sessions | `ccs ls` |
 | Resume session | `ccs go 1` (or `ccs go <session-id>`) |
 | Stats dashboard | `ccs stats` |

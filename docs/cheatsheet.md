@@ -13,7 +13,8 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | Morning standup | `/standup` |
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
-| Search sessions | `ccs "query"` |
+| Search all projects | `ccs "query"` |
+| Search current project | `ccs here "query"` |
 | Search last N days | `ccs "query" -d 7` |
 | Search since date | `ccs "query" --since 2025-03-01` |
 | List recent | `ccs ls` |

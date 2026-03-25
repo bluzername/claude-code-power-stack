@@ -23,9 +23,9 @@ case "$cmd" in
         echo "ccs - Claude Code Search"
         echo ""
         echo "Usage:"
-        echo "  ccs <query>              Search (results are numbered)"
+        echo "  ccs <query>              Search all projects (numbered)"
+        echo "  ccs here <query>         Search current project only"
         echo "  ccs <query> -d 7         Search last 7 days"
-        echo "  ccs <query> -p ~/proj    Search specific project"
         echo "  ccs ls                   List sessions (last 7 days)"
         echo "  ccs ls 30               List sessions (last 30 days)"
         echo "  ccs go 1                 Resume result #1 from last search"
@@ -245,6 +245,18 @@ print()
         ;;
     ix|index|reindex)
         cc-conversation-search index --all
+        ;;
+    here)
+        # Search scoped to current project directory
+        query="${1:-}"
+        if [ -z "$query" ]; then
+            echo "Usage: ccs here <query>"
+            echo "Searches only sessions from: $(pwd)"
+            exit 1
+        fi
+        shift
+        # Re-invoke ourselves with -p set to pwd
+        exec "$0" "$query" -p "$(pwd)" "$@"
         ;;
     *)
         # Default: search, show numbered results, cache session IDs

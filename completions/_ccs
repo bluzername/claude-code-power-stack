@@ -5,6 +5,7 @@
 _ccs() {
     local -a subcommands
     subcommands=(
+        'here:Search current project only'
         'ls:List recent sessions'
         'go:Resume a session by number or ID'
         'stats:Show conversation stats dashboard'
