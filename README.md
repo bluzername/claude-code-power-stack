@@ -38,6 +38,28 @@ Without                              With Power Stack
 Ghost and cc-conversation-search handle the **between-sessions** problem.
 Planning-with-files handles the **within-session** problem (long tasks that exhaust context).
 
+### Session lifecycle
+
+```mermaid
+flowchart LR
+    Start["cd project\nclaude"] --> Name["/rename-session\napi-feat-auth"]
+    Name --> Plan{Complex\ntask?}
+    Plan -->|Yes| PlanFiles["/plan\ntask_plan.md\nfindings.md\nprogress.md"]
+    Plan -->|No| Work
+    PlanFiles --> Work["Work normally"]
+    Work --> Ghost(["Ghost silently\ncaptures decisions"])
+    Work --> Done["End session"]
+    Done --> Later["Days later..."]
+    Later --> Search["ccs 'auth'\n[1] api-feat-auth"]
+    Search --> Resume["ccs go 1"]
+    Resume --> Start
+
+    style Ghost fill:#8b5cf6,color:#fff,stroke:none
+    style Search fill:#0ea5e9,color:#fff,stroke:none
+    style PlanFiles fill:#f59e0b,color:#fff,stroke:none
+    style Name fill:#10b981,color:#fff,stroke:none
+```
+
 ---
 
 ## Quick Start
