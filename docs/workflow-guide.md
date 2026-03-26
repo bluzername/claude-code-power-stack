@@ -96,7 +96,9 @@ ccs go a1b2c3d4-...         # Resume by full session ID
 
 ```bash
 ccs ls                      # Last 7 days (numbered, with previews)
+ccs ls here                 # Current project only
 ccs ls 30                   # Last 30 days
+ccs ls here 30              # Current project, last 30 days
 ```
 
 ## Monitoring

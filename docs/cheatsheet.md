@@ -18,11 +18,14 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | Search last N days | `ccs "query" -d 7` |
 | Search since date | `ccs "query" --since 2025-03-01` |
 | List recent | `ccs ls` |
+| List current project | `ccs ls here` |
 | List last 30 days | `ccs ls 30` |
 | Resume result #1 | `ccs go 1` |
 | Resume by ID | `ccs go <session-id>` |
 | Stats dashboard | `ccs stats` |
 | Health check | `ccs doctor` |
+| Quick ref in terminal | `ccs cheat` |
+| Update stack | `ccs update` |
 | Re-index | `ccs ix` |
 
 ## Session Naming Convention

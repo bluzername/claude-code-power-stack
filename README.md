@@ -424,10 +424,12 @@ Coming back after days/weeks?
 | Start planning | `/plan` |
 | Search all projects | `ccs "query"` |
 | Search current project | `ccs here "query"` |
-| List recent sessions | `ccs ls` |
-| Resume session | `ccs go 1` (or `ccs go <session-id>`) |
+| List recent sessions | `ccs ls` (or `ccs ls here`) |
+| Resume session | `ccs go 1` |
 | Stats dashboard | `ccs stats` |
 | Health check | `ccs doctor` |
+| Quick ref in terminal | `ccs cheat` |
+| Update stack | `ccs update` |
 | Re-index conversations | `ccs ix` |
 
 ---
