@@ -456,6 +456,13 @@ print()
                 fi
                 echo "{\"who\":\"$TEAM_WHO\",\"when\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"type\":\"$entry_type\",\"msg\":\"$msg\"}" >> "$TEAM_LOG"
                 echo -e "\033[0;32mLogged\033[0m [$entry_type] $msg"
+                # Remind to sync if there are unshared entries
+                if git rev-parse --is-inside-work-tree &>/dev/null; then
+                    unsynced=$(git diff --name-only -- "$TEAM_DIR/" 2>/dev/null | wc -l | tr -d ' ')
+                    if [ "${unsynced:-0}" -gt 0 ]; then
+                        echo -e "\033[0;33mTip:\033[0m run \033[1mccs team sync\033[0m to share with your team"
+                    fi
+                fi
                 ;;
             search)
                 if [ ! -f "$TEAM_LOG" ]; then

@@ -224,16 +224,17 @@ echo ""
 
 echo "--- Step 5/7: Commands, skills, and rules ---"
 
-# Commands
+# Commands (install all .md files from commands/)
 mkdir -p "$CLAUDE_DIR/commands"
-for cmd_file in rename-session.md standup.md; do
-    if [ -f "$SCRIPT_DIR/commands/$cmd_file" ]; then
-        cp "$SCRIPT_DIR/commands/$cmd_file" "$CLAUDE_DIR/commands/"
-        ok "Installed /${cmd_file%.md} command"
-    fi
+cmd_count=0
+for cmd_file in "$SCRIPT_DIR"/commands/*.md; do
+    [ -f "$cmd_file" ] || continue
+    cp "$cmd_file" "$CLAUDE_DIR/commands/"
+    ok "Installed /$(basename "${cmd_file%.md}") command"
+    ((cmd_count++))
 done
-if [ ! -f "$SCRIPT_DIR/commands/rename-session.md" ]; then
-    warn "commands/rename-session.md not found in repo"
+if [ "$cmd_count" -eq 0 ]; then
+    warn "No commands found in repo"
 fi
 
 # Skills
