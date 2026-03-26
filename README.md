@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/
 
 > **[Cheatsheet PDF](docs/cheatsheet.pdf)** (print it) | **[Workflow Guide](docs/workflow-guide.md)** (read it) | `ccs cheat` (in your terminal)
 
-**Jump to:** [What's in the Stack](#whats-in-the-stack) | [Quick Start](#quick-start) | [How It Works](#how-it-works) | [Deep Dive](#deep-dive-each-tool) | [Quick Reference](#quick-reference) | [FAQ](#faq)
+**Jump to:** [What's in the Stack](#whats-in-the-stack) | [Quick Start](#quick-start) | [How It Works](#how-it-works) | [Deep Dive](#deep-dive-each-tool) | [Team Mode](#team-mode) | [Quick Reference](#quick-reference) | [FAQ](#faq)
 
 ---
 
@@ -431,6 +431,55 @@ Coming back after days/weeks?
 | Quick ref in terminal | `ccs cheat` |
 | Update stack | `ccs update` |
 | Re-index conversations | `ccs ix` |
+| **Team** | |
+| Init team mode | `ccs team init` |
+| Log a decision | `ccs team log decision "chose RS256"` |
+| Log a blocker | `ccs team log blocker "CI fails on ARM"` |
+| Team activity | `ccs team` |
+| Search team log | `ccs team search "auth"` |
+| Team standup | `/team-standup` |
+
+---
+
+## Team Mode
+
+For teams of 2-8 people working on the same codebase with Claude Code. Git-first, no server needed.
+
+<details>
+<summary><b>How it works</b> (click to expand)</summary>
+
+Team mode adds a shared `.team/log.jsonl` file to your project. Each team member appends entries (decisions, findings, blockers) and the log travels with git. Append-only format means no merge conflicts.
+
+**Setup (once per project):**
+```bash
+ccs team init
+git add .team/ && git commit -m "init team mode"
+```
+
+**Daily workflow:**
+```bash
+git pull                                    # get teammates' entries
+claude
+> /team-standup                             # see what everyone did
+
+# ... work ...
+
+> /team-log                                 # log a decision
+# or from terminal:
+ccs team log decision "Using express-jwt middleware"
+ccs team log blocker "API rate limits hit in staging"
+ccs team log done "Phase 2 complete"
+
+git add .team/ && git commit -m "team log" && git push
+```
+
+**Entry types:** `decision`, `finding`, `blocker`, `done`, `handoff`
+
+**What stays personal:** Ghost memory, ccs search index, /standup, session history.
+**What's shared:** `.team/log.jsonl`, planning files (if committed), `.claude/CLAUDE.md` project rules.
+
+Your name is auto-detected from `git config user.name`.
+</details>
 
 ---
 
@@ -449,7 +498,9 @@ claude-code-power-stack/
     _ccs                  # zsh tab-completion
     ccs.bash              # bash tab-completion
   commands/
-    standup.md            # /standup - morning standup with yourself
+    standup.md            # /standup - personal morning standup
+    team-standup.md       # /team-standup - team standup from shared log
+    team-log.md           # /team-log - log decisions for your team
     rename-session.md     # /rename-session command
   skills/
     planning-with-files/  # /plan skill (full Manus-style planning)

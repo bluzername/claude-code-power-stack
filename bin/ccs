@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-CCS_VERSION="1.2.0"
+CCS_VERSION="1.3.0"
 CCS_CACHE="${HOME}/.ccs_last_results"
 CCS_REPO="${HOME}/.ccs_repo_path"
 
@@ -40,6 +40,10 @@ case "$cmd" in
         echo "  ccs stats                Show conversation stats dashboard"
         echo "  ccs doctor               Health check (Ghost, Ollama, index)"
         echo "  ccs cheat                Quick reference card in terminal"
+        echo "  ccs team                 Show recent team activity"
+        echo "  ccs team log <msg>       Log a decision/finding/blocker"
+        echo "  ccs team search <query>  Search team log"
+        echo "  ccs team init            Initialize team mode in current project"
         echo "  ccs update               Update the entire Power Stack"
         echo "  ccs ix                   Re-index all conversations"
         echo ""
@@ -379,6 +383,13 @@ print()
         echo -e "    ccs doctor             Health check"
         echo -e "    ccs update             Update the entire Power Stack"
         echo -e "    ccs ix                 Re-index conversations"
+        echo ""
+        echo -e "  ${Y}TEAM (git-shared, append-only)${N}"
+        echo -e "    ccs team               Show recent team activity"
+        echo -e "    ccs team log <msg>      Log a decision (auto-detects your name)"
+        echo -e "    ccs team log blocker .. Log a blocker"
+        echo -e "    ccs team search <q>    Search team log"
+        echo -e "    ccs team init          Initialize team mode"
         echo -e "    ghost mcp status       Ghost MCP health"
         echo ""
         echo -e "  ${Y}PLANNING FILES (created by /plan)${N}"
@@ -390,6 +401,138 @@ print()
         echo -e "  ${C}Types:${N} feat fix debug explore review plan research comms"
         echo -e "  ${C}Example:${N} api-feat-auth-flow, mobile-fix-crash"
         echo ""
+        ;;
+    team)
+        TEAM_DIR=".team"
+        TEAM_LOG="$TEAM_DIR/log.jsonl"
+        TEAM_WHO="$(git config user.name 2>/dev/null || echo "${USER:-unknown}")"
+        subcmd="${1:-show}"
+        shift 2>/dev/null || true
+
+        case "$subcmd" in
+            init)
+                if [ -f "$TEAM_LOG" ]; then
+                    echo "Team mode already initialized in $(pwd)/.team/"
+                else
+                    mkdir -p "$TEAM_DIR"
+                    echo "{\"who\":\"$TEAM_WHO\",\"when\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"type\":\"init\",\"msg\":\"Team mode initialized\"}" > "$TEAM_LOG"
+                    # Add .team/ to .gitignore? No - it should be tracked
+                    echo "Team mode initialized in $(pwd)/.team/"
+                    echo "Commit .team/log.jsonl to share with your team."
+                fi
+                ;;
+            log)
+                if [ ! -d "$TEAM_DIR" ]; then
+                    echo "Team mode not initialized. Run: ccs team init"
+                    exit 1
+                fi
+                # Parse type and message
+                entry_type="decision"
+                msg=""
+                case "${1:-}" in
+                    decision|finding|blocker|done|handoff)
+                        entry_type="$1"
+                        shift
+                        msg="$*"
+                        ;;
+                    "")
+                        echo "Usage: ccs team log <type> <message>"
+                        echo "Types: decision, finding, blocker, done, handoff"
+                        echo "Example: ccs team log decision \"Using RS256 for JWT tokens\""
+                        exit 1
+                        ;;
+                    *)
+                        # No type prefix - default to decision
+                        msg="$*"
+                        ;;
+                esac
+                if [ -z "$msg" ]; then
+                    echo "Usage: ccs team log [type] <message>"
+                    exit 1
+                fi
+                echo "{\"who\":\"$TEAM_WHO\",\"when\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"type\":\"$entry_type\",\"msg\":\"$msg\"}" >> "$TEAM_LOG"
+                echo -e "\033[0;32mLogged\033[0m [$entry_type] $msg"
+                ;;
+            search)
+                if [ ! -f "$TEAM_LOG" ]; then
+                    echo "No team log found. Run: ccs team init"
+                    exit 1
+                fi
+                query="${1:-}"
+                if [ -z "$query" ]; then
+                    echo "Usage: ccs team search <query>"
+                    exit 1
+                fi
+                grep -i "$query" "$TEAM_LOG" 2>/dev/null | python3 -c "
+import json, sys, os
+home = os.path.expanduser('~')
+for line in sys.stdin:
+    try:
+        e = json.loads(line)
+        who = e.get('who','?')
+        when = e.get('when','')[:16].replace('T',' ')
+        etype = e.get('type','')
+        msg = e.get('msg','')
+        color = {'decision':'\033[0;36m','finding':'\033[0;33m','blocker':'\033[0;31m','done':'\033[0;32m','handoff':'\033[0;35m'}.get(etype, '\033[0m')
+        print(f'  {when}  \033[1m@{who}\033[0m {color}[{etype}]\033[0m {msg}')
+    except: pass
+" 2>&1
+                ;;
+            show|"")
+                if [ ! -f "$TEAM_LOG" ]; then
+                    echo "No team log found. Run: ccs team init"
+                    exit 1
+                fi
+                days="${1:-7}"
+                python3 -c "
+import json, sys, os
+from datetime import datetime, timedelta
+
+days = int(sys.argv[1])
+from datetime import timezone
+cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+entries = []
+with open('$TEAM_LOG') as f:
+    for line in f:
+        try:
+            e = json.loads(line)
+            if e.get('when','') >= cutoff and e.get('type') != 'init':
+                entries.append(e)
+        except: pass
+
+if not entries:
+    print(f'No team activity in the last {days} days.')
+    sys.exit(0)
+
+# Group by person
+people = {}
+for e in entries:
+    who = e.get('who','?')
+    if who not in people:
+        people[who] = []
+    people[who].append(e)
+
+print(f'\n  \033[1mTeam Activity (last {days} days)\033[0m')
+print('  ' + '=' * 40)
+for who, evts in people.items():
+    print(f'\n  \033[1m@{who}\033[0m ({len(evts)} entries)')
+    for e in evts[-5:]:  # Last 5 per person
+        when = e.get('when','')[:16].replace('T',' ')
+        etype = e.get('type','')
+        msg = e.get('msg','')
+        color = {'decision':'\033[0;36m','finding':'\033[0;33m','blocker':'\033[0;31m','done':'\033[0;32m','handoff':'\033[0;35m'}.get(etype, '\033[0m')
+        print(f'    {when} {color}[{etype}]\033[0m {msg}')
+
+print(f'\n  \033[0;32m{len(entries)} entries from {len(people)} people.\033[0m')
+print()
+" "$days" 2>&1
+                ;;
+            *)
+                echo "Unknown team command: $subcmd"
+                echo "Usage: ccs team [show|log|search|init]"
+                exit 1
+                ;;
+        esac
         ;;
     update|upgrade)
         # Find the repo directory

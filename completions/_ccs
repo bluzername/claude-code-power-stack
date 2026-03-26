@@ -11,6 +11,7 @@ _ccs() {
         'go:Resume a session by number or ID'
         'stats:Show conversation stats dashboard'
         'doctor:Health check (Ghost, Ollama, index)'
+        'team:Team activity, logging, and search'
         'update:Update the entire Power Stack'
         'ix:Re-index all conversations'
         'help:Show help'
@@ -41,8 +42,17 @@ _ccs() {
             ;;
         ls)
             if (( CURRENT == 3 )); then
-                local -a days=('7:Last week' '14:Last 2 weeks' '30:Last month' '90:Last quarter')
-                _describe 'days' days
+                local -a opts=('here:Current project only' '7:Last week' '14:Last 2 weeks' '30:Last month' '90:Last quarter')
+                _describe 'options' opts
+            fi
+            ;;
+        team)
+            if (( CURRENT == 3 )); then
+                local -a teamcmds=('log:Log a decision/finding/blocker' 'search:Search team log' 'init:Initialize team mode' 'show:Show recent activity')
+                _describe 'team command' teamcmds
+            elif (( CURRENT == 4 )) && [[ "${words[3]}" == "log" ]]; then
+                local -a types=('decision:Technical choice' 'finding:Discovery' 'blocker:Blocking issue' 'done:Completed work' 'handoff:Passing to teammate')
+                _describe 'entry type' types
             fi
             ;;
         *)

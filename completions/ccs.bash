@@ -7,7 +7,7 @@ _ccs_completions() {
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
         # First arg: subcommands
-        COMPREPLY=($(compgen -W "here cheat ls go stats doctor update ix help" -- "$cur"))
+        COMPREPLY=($(compgen -W "here cheat ls go stats doctor team update ix help" -- "$cur"))
         return
     fi
 
@@ -26,6 +26,13 @@ _ccs_completions() {
         ls)
             if [[ ${COMP_CWORD} -eq 2 ]]; then
                 COMPREPLY=($(compgen -W "7 14 30 90" -- "$cur"))
+            fi
+            ;;
+        team)
+            if [[ ${COMP_CWORD} -eq 2 ]]; then
+                COMPREPLY=($(compgen -W "log search init show" -- "$cur"))
+            elif [[ ${COMP_CWORD} -eq 3 ]] && [[ "${COMP_WORDS[2]}" == "log" ]]; then
+                COMPREPLY=($(compgen -W "decision finding blocker done handoff" -- "$cur"))
             fi
             ;;
         *)
