@@ -11,6 +11,7 @@ _ccs() {
         'go:Resume a session by number or ID'
         'stats:Show conversation stats dashboard'
         'doctor:Health check (Ghost, Ollama, index)'
+        'update:Update the entire Power Stack'
         'ix:Re-index all conversations'
         'help:Show help'
     )

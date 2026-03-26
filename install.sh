@@ -278,6 +278,9 @@ if [ -f "$SCRIPT_DIR/bin/ccs" ]; then
         ok "Installed ccs to ~/.local/bin/ccs"
         warn "Make sure ~/.local/bin is on your PATH"
     fi
+    # Save repo path so ccs update can find it
+    echo "$SCRIPT_DIR" > "$HOME/.ccs_repo_path"
+    ok "Saved repo path for ccs update"
 else
     warn "bin/ccs not found in repo"
 fi

@@ -7,7 +7,7 @@ _ccs_completions() {
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
         # First arg: subcommands
-        COMPREPLY=($(compgen -W "here cheat ls go stats doctor ix help" -- "$cur"))
+        COMPREPLY=($(compgen -W "here cheat ls go stats doctor update ix help" -- "$cur"))
         return
     fi
 

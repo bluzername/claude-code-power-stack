@@ -15,6 +15,7 @@ set -euo pipefail
 
 CCS_VERSION="1.1.0"
 CCS_CACHE="${HOME}/.ccs_last_results"
+CCS_REPO="${HOME}/.ccs_repo_path"
 
 cmd="${1:-help}"
 shift 2>/dev/null || true
@@ -37,6 +38,7 @@ case "$cmd" in
         echo "  ccs stats                Show conversation stats dashboard"
         echo "  ccs doctor               Health check (Ghost, Ollama, index)"
         echo "  ccs cheat                Quick reference card in terminal"
+        echo "  ccs update               Update the entire Power Stack"
         echo "  ccs ix                   Re-index all conversations"
         echo ""
         echo "Search flags:"
@@ -351,6 +353,7 @@ print()
         echo -e "  ${P}MAINTAIN${N}"
         echo -e "    ccs stats              Usage dashboard"
         echo -e "    ccs doctor             Health check"
+        echo -e "    ccs update             Update the entire Power Stack"
         echo -e "    ccs ix                 Re-index conversations"
         echo -e "    ghost mcp status       Ghost MCP health"
         echo ""
@@ -363,6 +366,23 @@ print()
         echo -e "  ${C}Types:${N} feat fix debug explore review plan research comms"
         echo -e "  ${C}Example:${N} api-feat-auth-flow, mobile-fix-crash"
         echo ""
+        ;;
+    update|upgrade)
+        # Find the repo directory
+        repo_dir=""
+        if [ -f "$CCS_REPO" ]; then
+            repo_dir="$(cat "$CCS_REPO")"
+        fi
+        # Fallback locations
+        for dir in "$repo_dir" "${CLAUDE_POWER_STACK_DIR:-}" "${HOME}/.claude-power-stack"; do
+            if [ -n "$dir" ] && [ -f "$dir/update.sh" ]; then
+                exec bash "$dir/update.sh"
+            fi
+        done
+        echo "Could not find Power Stack repo."
+        echo "Set the path: echo '/path/to/claude-code-power-stack' > ~/.ccs_repo_path"
+        echo "Or re-install: curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/main/setup.sh | bash"
+        exit 1
         ;;
     ix|index|reindex)
         cc-conversation-search index --all
