@@ -58,12 +58,15 @@ Nothing to do. Ghost silently captures decisions. If /plan is active, Claude upd
 
 **One habit to build:** if you're doing research (reading docs, searching code, exploring options), tell Claude to update `findings.md` after every 2 lookups. Context window = RAM. Planning files = disk.
 
-### End of day
+### End of session
 
-Just close the terminal. Everything is already saved:
-- Ghost has your decisions
-- Planning files have your progress
-- The session name makes it searchable
+Before closing, say `/wrapup`. Claude will:
+1. Summarize what was done, decisions made, and open items
+2. Update planning files (mark phases complete, log progress)
+3. Offer to log key items for the team (if team mode is active)
+4. Suggest a session name if you haven't set one
+
+Or just close the terminal - Ghost already has your decisions and planning files have your progress.
 
 ## Searching and Resuming
 

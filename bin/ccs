@@ -341,14 +341,14 @@ print()
 
         # Commands installed
         cmd_count=0
-        for cmd in rename-session standup team-log team-standup; do
+        for cmd in rename-session standup wrapup team-log team-standup; do
             [ -f "${HOME}/.claude/commands/${cmd}.md" ] && ((cmd_count++))
         done
-        if [ "$cmd_count" -eq 4 ]; then
-            echo -e "  $OK  all slash commands installed ($cmd_count/4)"
+        if [ "$cmd_count" -eq 5 ]; then
+            echo -e "  $OK  all slash commands installed ($cmd_count/5)"
             ((pass++))
         else
-            echo -e "  $WARN  $cmd_count/4 slash commands installed (run: ccs update)"
+            echo -e "  $WARN  $cmd_count/5 slash commands installed (run: ccs update)"
         fi
 
         # Version check (non-blocking, skipped if offline)

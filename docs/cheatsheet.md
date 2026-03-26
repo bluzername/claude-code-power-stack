@@ -11,6 +11,7 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | What | Command |
 |------|---------|
 | Morning standup | `/standup` |
+| End-of-session wrapup | `/wrapup` |
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
 | Search all projects | `ccs "query"` |
@@ -79,9 +80,10 @@ cd ~/my-project && claude   # Ghost + planning files restore context
 ## Decision Tree
 
 ```
-Start of day?  --> ccs team standup (or /standup for personal)
+Start of day?  --> ccs team standup (or /standup)
 Complex task?  --> /plan
 Simple task?   --> just do it (Ghost captures silently)
+Done for now?  --> /wrapup (summarize + log for team)
 Find old work? --> ccs "topic" then ccs go 1
 Team decision? --> ccs team log d "msg" then ccs team sync
 Back after days? --> planning files = instant recovery

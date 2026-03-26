@@ -275,9 +275,15 @@ Claude creates `task_plan.md`, `findings.md`, `progress.md` and works phase by p
 
 ### 3. Work normally
 
-Ghost silently captures decisions. Planning files log your progress. Just close the terminal when done.
+Ghost silently captures decisions. Planning files log your progress.
 
-### 4. Find and resume
+### 4. Wrap up
+
+> You: "/wrapup"
+
+Claude summarizes what was done, updates planning files, and offers to log key items for the team.
+
+### 5. Find and resume
 
 ```bash
 $ ccs "rate limiting"
@@ -411,6 +417,9 @@ Complex task (3+ steps)?
 Simple task or quick question?
   --> Just do it. Ghost captures decisions silently.
 
+Done for the day?
+  --> /wrapup (summarizes session, updates plans, logs for team)
+
 Need to find old work?
   --> ccs "<topic>" then ccs go 1
 
@@ -426,6 +435,7 @@ Coming back after days/weeks?
 | Action | Command |
 |--------|---------|
 | Morning standup | `/standup` |
+| End-of-session wrapup | `/wrapup` |
 | Name session | `/rename-session` |
 | Start planning | `/plan` |
 | Search all projects | `ccs "query"` |
@@ -506,6 +516,7 @@ claude-code-power-stack/
     ccs.bash              # bash tab-completion
   commands/
     standup.md            # /standup - personal morning standup
+    wrapup.md             # /wrapup - end-of-session summary
     team-standup.md       # /team-standup - team standup from shared log
     team-log.md           # /team-log - log decisions for your team
     rename-session.md     # /rename-session command
