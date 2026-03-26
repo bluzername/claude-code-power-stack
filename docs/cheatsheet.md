@@ -6,7 +6,7 @@ cd ~/my-project && claude
 ```
 Ghost auto-loads context. Accept or adjust the suggested session name.
 
-## Commands
+## Individual Commands
 
 | What | Command |
 |------|---------|
@@ -16,19 +16,32 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 | Search all projects | `ccs "query"` |
 | Search current project | `ccs here "query"` |
 | Search last N days | `ccs "query" -d 7` |
-| Search since date | `ccs "query" --since 2025-03-01` |
 | List recent | `ccs ls` |
 | List current project | `ccs ls here` |
-| List last 30 days | `ccs ls 30` |
 | Resume result #1 | `ccs go 1` |
-| Resume by ID | `ccs go <session-id>` |
 | Stats dashboard | `ccs stats` |
 | Health check | `ccs doctor` |
 | Quick ref in terminal | `ccs cheat` |
 | Update stack | `ccs update` |
 | Re-index | `ccs ix` |
 
-## Session Naming Convention
+## Team Commands
+
+| What | Command |
+|------|---------|
+| Init team mode | `ccs team init` |
+| Team standup (terminal) | `ccs team standup` |
+| Team standup (Claude) | `/team-standup` |
+| Log decision | `ccs team log d "msg"` |
+| Log finding | `ccs team log f "msg"` |
+| Log blocker | `ccs team log b "msg"` |
+| Log completed | `ccs team log done "msg"` |
+| Log handoff | `ccs team log h "msg"` |
+| Show team activity | `ccs team` |
+| Search team log | `ccs team search "query"` |
+| Commit + push log | `ccs team sync` |
+
+## Session Naming
 
 ```
 {project}-{type}-{descriptor}
@@ -37,15 +50,6 @@ Ghost auto-loads context. Accept or adjust the suggested session name.
 **Types:** `feat` `fix` `debug` `explore` `review` `plan` `research` `comms`
 
 **Examples:** `api-feat-auth-flow` | `mobile-fix-crash` | `infra-plan-k8s`
-
-## When to Use /plan
-
-| Use /plan | Skip /plan |
-|-----------|------------|
-| 3+ step tasks | Quick questions |
-| Research then build | Single file edits |
-| Long sessions (50+ calls) | Simple known fixes |
-| Multi-session work | Running /recap, /email |
 
 ## Planning Files (created by /plan)
 
@@ -65,22 +69,21 @@ Context window = RAM (volatile). Planning files = disk (persistent).
 ## Resuming Work
 
 ```bash
-# Find session (results are numbered)
-ccs "auth migration"
+ccs "auth migration"        # numbered results
+ccs go 1                    # resume #1
 
-# Resume result #1 - no UUID copying
-ccs go 1
-
-# Or start fresh (Ghost + planning files restore context)
-cd ~/my-project && claude
+# Or start fresh
+cd ~/my-project && claude   # Ghost + planning files restore context
 ```
 
 ## Decision Tree
 
 ```
+Start of day?  --> ccs team standup (or /standup for personal)
 Complex task?  --> /plan
 Simple task?   --> just do it (Ghost captures silently)
-Find old work? --> ccs "topic"
+Find old work? --> ccs "topic" then ccs go 1
+Team decision? --> ccs team log d "msg" then ccs team sync
 Back after days? --> planning files = instant recovery
 ```
 
@@ -104,4 +107,4 @@ After 3:  Escalate to user
 | What have I done? | progress.md |
 
 ---
-*Claude Code Power Stack by [@bluzername](https://github.com/bluzername)*
+*Claude Code Power Stack v1.4.0 by [@bluzername](https://github.com/bluzername)*
