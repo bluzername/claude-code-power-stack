@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/
 
 > **[Cheatsheet PDF](docs/cheatsheet.pdf)** (print it) | **[Workflow Guide](docs/workflow-guide.md)** (read it) | `ccs cheat` (in your terminal)
 
-**Jump to:** [What's in the Stack](#whats-in-the-stack) | [Quick Start](#quick-start) | [Your First 5 Minutes](#your-first-5-minutes) | [Usage Guide](#usage-guide) | [Deep Dive](#deep-dive-each-tool) | [Quick Reference](#quick-reference) | [FAQ](#faq)
+**Jump to:** [What's in the Stack](#whats-in-the-stack) | [Quick Start](#quick-start) | [How It Works](#how-it-works) | [Deep Dive](#deep-dive-each-tool) | [Quick Reference](#quick-reference) | [FAQ](#faq)
 
 ---
 
@@ -248,66 +248,43 @@ Both must pass. If `ghost mcp status` passes but `claude mcp list` doesn't show 
 
 ---
 
-## Your First 5 Minutes
+## How It Works
 
-After install, here's the full workflow in action:
+### 1. Start your day with /standup
 
-**1. Start a session and name it**
 ```bash
-cd ~/my-project
-claude
+cd ~/my-project && claude
 ```
+> You: "/standup"
+
+Claude checks recent sessions, reads active planning files, loads Ghost context, and summarizes where you left off.
+
+### 2. Name and plan
+
 > You: "Add rate limiting to the API"
-> Claude: Want me to name this session? I'd suggest: `api-feat-rate-limiting`
-> You: "yes"
+> Claude: Want me to name this session? `api-feat-rate-limiting`
+> You: "yes, and /plan"
 
-**2. Use /plan for complex work**
-> You: "/plan"
+Claude creates `task_plan.md`, `findings.md`, `progress.md` and works phase by phase.
 
-Claude creates `task_plan.md`, `findings.md`, `progress.md` in your project dir and works phase by phase.
+### 3. Work normally
 
-**3. Work normally, then end the session**
+Ghost silently captures decisions. Planning files log your progress. Just close the terminal when done.
 
-Ghost silently captures your decisions. Planning files log your progress. Just close the terminal when done.
+### 4. Find and resume
 
-**4. Days later - find and resume**
 ```bash
 $ ccs "rate limiting"
-  [1] 2025-03-20  ~/my-project
-      a1b2c3d4-...
+  [1] 2025-03-20  ~/my-project  (198 msgs)
       Add rate limiting to the API...
-  [2] 2025-03-18  ~/my-project
-      e5f6g7h8-...
-      Research rate limiting approaches...
   2 sessions found. Resume with: ccs go 1
 
-$ ccs go 1    # just the number - no UUID copying
+$ ccs go 1
 ```
 
-Claude picks up right where you left off - Ghost loads your decisions, planning files show you're on Phase 3.
+Ghost loads your decisions, planning files show you're on Phase 3. No re-research needed.
 
-That's it. Memory, search, planning - all working together.
-
----
-
-## Usage Guide
-
-### Your new session lifecycle
-
-#### 1. Start a session
-
-```bash
-cd ~/my-project
-claude
-```
-
-Two things happen automatically:
-- **Ghost** loads relevant project context via its SessionStart hook
-- Claude suggests a **session name** based on your first message
-
-#### 2. Name the session
-
-When Claude suggests a name, accept or adjust it. The convention is:
+### Session naming convention
 
 ```
 {project}-{type}-{descriptor}
@@ -319,36 +296,15 @@ When Claude suggests a name, accept or adjust it. The convention is:
 | type | `feat`, `fix`, `debug`, `explore`, `review`, `plan`, `research`, `comms` | `feat` |
 | descriptor | 2-3 hyphenated words | `auth-flow` |
 
-Examples: `api-feat-auth-flow`, `mobile-fix-crash-on-login`, `infra-plan-k8s-migration`
+### Planning files (created by /plan)
 
-#### 3. For complex tasks, use /plan
+| File | Purpose | When to update |
+|------|---------|----------------|
+| `task_plan.md` | Phases, decisions, errors | After each phase |
+| `findings.md` | Research notes and discoveries | After every 2 searches |
+| `progress.md` | Session log | Throughout session |
 
-If your task has 3+ steps or will take more than 10 minutes, say `/plan`. This creates three files **in your project directory**:
-
-| File | Purpose | Analogy |
-|------|---------|---------|
-| `task_plan.md` | Roadmap with phases | Your GPS route |
-| `findings.md` | Research notes and discoveries | Your notebook |
-| `progress.md` | Session log of what happened | Your journal |
-
-These files survive context compression, session restarts, and time away from the project.
-
-#### 4. Work normally
-
-Ghost silently records decisions in the background. If you used `/plan`, Claude updates the planning files as you work through phases.
-
-#### 5. Resume later
-
-```bash
-# Option A: Search for the session
-ccs "auth flow"
-claude --resume <session-id>
-
-# Option B: Start fresh in the same project dir
-cd ~/my-project
-claude
-# Ghost auto-loads context, planning files provide phase-by-phase state
-```
+These survive context compression, session restarts, and time away from the project. See the [Workflow Guide](docs/workflow-guide.md) for detailed examples.
 
 ---
 
@@ -450,12 +406,11 @@ Simple task or quick question?
   --> Just do it. Ghost captures decisions silently.
 
 Need to find old work?
-  --> ccs "<topic>"
-  --> claude --resume <session-id>
+  --> ccs "<topic>" then ccs go 1
 
 Coming back after days/weeks?
-  --> If /plan was used: planning files = instant recovery
-  --> If not: Ghost + cc-conversation-search reconstruct context
+  --> /standup for a quick summary
+  --> planning files = instant phase-by-phase recovery
 ```
 
 ---
