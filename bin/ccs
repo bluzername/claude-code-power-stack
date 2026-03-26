@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-CCS_VERSION="1.4.0"
+CCS_VERSION="1.5.0"
 # Short aliases for team log: d=decision, f=finding, b=blocker, h=handoff
 CCS_CACHE="${HOME}/.ccs_last_results"
 CCS_REPO="${HOME}/.ccs_repo_path"
