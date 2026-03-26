@@ -339,6 +339,31 @@ print()
             ((fail++))
         fi
 
+        # Commands installed
+        cmd_count=0
+        for cmd in rename-session standup team-log team-standup; do
+            [ -f "${HOME}/.claude/commands/${cmd}.md" ] && ((cmd_count++))
+        done
+        if [ "$cmd_count" -eq 4 ]; then
+            echo -e "  $OK  all slash commands installed ($cmd_count/4)"
+            ((pass++))
+        else
+            echo -e "  $WARN  $cmd_count/4 slash commands installed (run: ccs update)"
+        fi
+
+        # Version check (non-blocking, skipped if offline)
+        if command -v curl &>/dev/null; then
+            latest=$(curl -sf --max-time 3 "https://api.github.com/repos/bluzername/claude-code-power-stack/releases/latest" 2>/dev/null | grep '"tag_name"' | head -1 | sed 's/.*"v\([^"]*\)".*/\1/')
+            if [ -n "$latest" ]; then
+                if [ "$CCS_VERSION" = "$latest" ]; then
+                    echo -e "  $OK  ccs v$CCS_VERSION (latest)"
+                    ((pass++))
+                else
+                    echo -e "  $WARN  ccs v$CCS_VERSION (v$latest available - run: ccs update)"
+                fi
+            fi
+        fi
+
         # Planning files in current directory
         if [ -f "task_plan.md" ]; then
             phase=$(grep -c "Status.*in_progress\|Status.*pending" task_plan.md 2>/dev/null || echo 0)
