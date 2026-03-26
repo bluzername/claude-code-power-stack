@@ -54,22 +54,26 @@ Planning-with-files handles the **within-session** problem (long tasks that exha
 
 ```mermaid
 flowchart LR
-    Start["cd project\nclaude"] --> Name["/rename-session\napi-feat-auth"]
+    Start["cd project\nclaude"] --> Standup["/standup"]
+    Standup --> Name["/rename-session\napi-feat-auth"]
     Name --> Plan{Complex\ntask?}
-    Plan -->|Yes| PlanFiles["/plan\ntask_plan.md\nfindings.md\nprogress.md"]
+    Plan -->|Yes| PlanFiles["/plan"]
     Plan -->|No| Work
-    PlanFiles --> Work["Work normally"]
-    Work --> Ghost(["Ghost silently\ncaptures decisions"])
-    Work --> Done["End session"]
+    PlanFiles --> Work["Work"]
+    Work --> Ghost(["Ghost captures\ndecisions"])
+    Work --> Wrapup["/wrapup"]
+    Wrapup -.->|team mode| TeamLog["ccs team log d\nccs team sync"]
+    Wrapup --> Done["Close terminal"]
     Done --> Later["Days later..."]
-    Later --> Search["ccs 'auth'\n[1] api-feat-auth"]
-    Search --> Resume["ccs go 1"]
-    Resume --> Start
+    Later --> Search["ccs 'auth'\nccs go 1"]
+    Search --> Start
 
+    style Standup fill:#10b981,color:#fff,stroke:none
     style Ghost fill:#8b5cf6,color:#fff,stroke:none
     style Search fill:#0ea5e9,color:#fff,stroke:none
     style PlanFiles fill:#f59e0b,color:#fff,stroke:none
-    style Name fill:#10b981,color:#fff,stroke:none
+    style Wrapup fill:#ec4899,color:#fff,stroke:none
+    style TeamLog fill:#6366f1,color:#fff,stroke:none
 ```
 
 ---
