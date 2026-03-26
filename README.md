@@ -11,6 +11,10 @@
 
 A curated toolkit that gives [Claude Code](https://docs.anthropic.com/en/docs/claude-code) persistent memory, cross-project search, structured planning, and session management - so you never repeat work across projects.
 
+<p align="center">
+  <img src="assets/demo.svg" alt="ccs demo - search, resume, team mode" width="700">
+</p>
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/main/setup.sh | bash
 ```
