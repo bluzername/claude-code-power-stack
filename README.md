@@ -437,6 +437,7 @@ Coming back after days/weeks?
 | Log a blocker | `ccs team log blocker "CI fails on ARM"` |
 | Team activity | `ccs team` |
 | Search team log | `ccs team search "auth"` |
+| Sync team log | `ccs team sync` |
 | Team standup | `/team-standup` |
 
 ---
@@ -470,7 +471,7 @@ ccs team log decision "Using express-jwt middleware"
 ccs team log blocker "API rate limits hit in staging"
 ccs team log done "Phase 2 complete"
 
-git add .team/ && git commit -m "team log" && git push
+ccs team sync                               # commit + push in one step
 ```
 
 **Entry types:** `decision`, `finding`, `blocker`, `done`, `handoff`

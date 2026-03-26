@@ -43,6 +43,7 @@ case "$cmd" in
         echo "  ccs team                 Show recent team activity"
         echo "  ccs team log <msg>       Log a decision/finding/blocker"
         echo "  ccs team search <query>  Search team log"
+        echo "  ccs team sync            Commit and push team log"
         echo "  ccs team init            Initialize team mode in current project"
         echo "  ccs update               Update the entire Power Stack"
         echo "  ccs ix                   Re-index all conversations"
@@ -389,6 +390,7 @@ print()
         echo -e "    ccs team log <msg>      Log a decision (auto-detects your name)"
         echo -e "    ccs team log blocker .. Log a blocker"
         echo -e "    ccs team search <q>    Search team log"
+        echo -e "    ccs team sync          Commit + push team log"
         echo -e "    ccs team init          Initialize team mode"
         echo -e "    ghost mcp status       Ghost MCP health"
         echo ""
@@ -477,6 +479,27 @@ for line in sys.stdin:
         print(f'  {when}  \033[1m@{who}\033[0m {color}[{etype}]\033[0m {msg}')
     except: pass
 " 2>&1
+                ;;
+            sync|push)
+                if [ ! -f "$TEAM_LOG" ]; then
+                    echo "No team log found. Run: ccs team init"
+                    exit 1
+                fi
+                if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+                    echo "Not in a git repo. Team sync requires git."
+                    exit 1
+                fi
+                git add "$TEAM_DIR/" 2>/dev/null
+                if git diff --cached --quiet -- "$TEAM_DIR/" 2>/dev/null; then
+                    echo "Team log already up to date - nothing to sync."
+                else
+                    git commit -m "team: update log" -- "$TEAM_DIR/" 2>&1 | tail -1
+                    if git push 2>&1 | tail -1; then
+                        echo -e "\033[0;32mTeam log committed and pushed.\033[0m"
+                    else
+                        echo -e "\033[1;33mCommitted locally. Push manually when ready: git push\033[0m"
+                    fi
+                fi
                 ;;
             show|"")
                 if [ ! -f "$TEAM_LOG" ]; then

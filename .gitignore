@@ -17,3 +17,8 @@ out/
 # docs/cheatsheet.pdf
 .claude/
 .team/
+
+# Planning files (created by /plan in user projects, not part of this repo)
+task_plan.md
+findings.md
+progress.md
