@@ -33,6 +33,8 @@ case "$cmd" in
         echo "  ccs <query> -d 7         Search last 7 days"
         echo "  ccs ls                   List sessions (last 7 days)"
         echo "  ccs ls 30               List sessions (last 30 days)"
+        echo "  ccs ls here              List current project only"
+        echo "  ccs ls here 30           List current project, last 30 days"
         echo "  ccs go 1                 Resume result #1 from last search"
         echo "  ccs go <session-id>      Resume by full session ID"
         echo "  ccs stats                Show conversation stats dashboard"
@@ -50,6 +52,11 @@ case "$cmd" in
         echo "  -n, --limit N            Max results (default: 10)"
         ;;
     ls|list)
+        project_filter=""
+        if [ "${1:-}" = "here" ]; then
+            project_filter="$(pwd)"
+            shift
+        fi
         days="${1:-7}"
         DB="${HOME}/.conversation-search/index.db"
         if [ ! -f "$DB" ]; then
@@ -61,6 +68,7 @@ import sqlite3, os, sys
 from datetime import datetime, timedelta
 
 days = int(sys.argv[1])
+project_filter = sys.argv[2] if len(sys.argv) > 2 else ''
 db = os.path.expanduser('~/.conversation-search/index.db')
 home = os.path.expanduser('~')
 conn = sqlite3.connect(db)
@@ -69,19 +77,32 @@ c = conn.cursor()
 cutoff = (datetime.now() - timedelta(days=days)).isoformat()
 
 # Get sessions with stats
-c.execute('''
-    SELECT session_id, project_path,
-           COUNT(*) as msg_count,
-           MAX(timestamp) as last_ts
-    FROM messages
-    WHERE is_tool_noise = 0 AND timestamp > ?
-    GROUP BY session_id
-    ORDER BY last_ts DESC
-''', (cutoff,))
+if project_filter:
+    c.execute('''
+        SELECT session_id, project_path,
+               COUNT(*) as msg_count,
+               MAX(timestamp) as last_ts
+        FROM messages
+        WHERE is_tool_noise = 0 AND timestamp > ? AND project_path = ?
+        GROUP BY session_id
+        ORDER BY last_ts DESC
+    ''', (cutoff, project_filter))
+else:
+    c.execute('''
+        SELECT session_id, project_path,
+               COUNT(*) as msg_count,
+               MAX(timestamp) as last_ts
+        FROM messages
+        WHERE is_tool_noise = 0 AND timestamp > ?
+        GROUP BY session_id
+        ORDER BY last_ts DESC
+    ''', (cutoff,))
 sessions = c.fetchall()
 
 if not sessions:
-    print(f'No sessions in the last {days} days.')
+    proj_short = project_filter.replace(home, '~') if project_filter else ''
+    where = f' in {proj_short}' if proj_short else ''
+    print(f'No sessions{where} in the last {days} days.')
     conn.close()
     sys.exit(0)
 
@@ -102,6 +123,7 @@ for sid, _, _, _ in sessions:
           AND length(full_content) > 10
           AND full_content NOT LIKE '<command-%'
           AND full_content NOT LIKE 'Implement the following plan%'
+          AND full_content NOT LIKE 'Base directory for this skill%'
         ORDER BY timestamp ASC LIMIT 1
     ''', (sid,))
     row = c.fetchone()
@@ -109,7 +131,9 @@ for sid, _, _, _ in sessions:
 
 conn.close()
 
-print(f'\n  Sessions (last {days} days)\n')
+proj_label = project_filter.replace(home, '~') if project_filter else ''
+where = f' in {proj_label}' if proj_label else ''
+print(f'\n  Sessions{where} (last {days} days)\n')
 for i, (sid, proj, count, last_ts) in enumerate(sessions, 1):
     proj_short = (proj or '').replace(home, '~')
     ts = last_ts[:16].replace('T', ' ') if last_ts else ''
@@ -124,7 +148,7 @@ for i, (sid, proj, count, last_ts) in enumerate(sessions, 1):
 
 print(f'\033[0;32m{len(sessions)} sessions.\033[0m Resume with: ccs go 1')
 print()
-" "$days" 2>&1
+" "$days" "$project_filter" 2>&1
         ;;
     go|resume)
         if [ -z "${1:-}" ]; then
