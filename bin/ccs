@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-CCS_VERSION="1.1.0"
+CCS_VERSION="1.2.0"
 CCS_CACHE="${HOME}/.ccs_last_results"
 CCS_REPO="${HOME}/.ccs_repo_path"
 
