@@ -42,6 +42,7 @@ case "$cmd" in
         echo "  ccs doctor               Health check (Ghost, Ollama, index)"
         echo "  ccs cheat                Quick reference card in terminal"
         echo "  ccs team                 Show recent team activity"
+        echo "  ccs team standup         Morning team standup (no Claude needed)"
         echo "  ccs team log d <msg>     Log a decision (or f/b/done/h)"
         echo "  ccs team search <query>  Search team log"
         echo "  ccs team sync            Commit and push team log"
@@ -388,6 +389,7 @@ print()
         echo ""
         echo -e "  ${Y}TEAM (git-shared, append-only)${N}"
         echo -e "    ccs team               Show recent team activity"
+        echo -e "    ccs team standup       Morning standup (no Claude needed)"
         echo -e "    ccs team log d <msg>    Log a decision (d/f/b/done/h)"
         echo -e "    ccs team search <q>    Search team log"
         echo -e "    ccs team sync          Commit + push team log"
@@ -550,9 +552,90 @@ print(f'\n  \033[0;32m{len(entries)} entries from {len(people)} people.\033[0m')
 print()
 " "$days" 2>&1
                 ;;
+            standup|morning)
+                if [ ! -f "$TEAM_LOG" ]; then
+                    echo "No team log found. Run: ccs team init"
+                    exit 1
+                fi
+
+                # Pull latest
+                if git rev-parse --is-inside-work-tree &>/dev/null; then
+                    git pull --ff-only 2>/dev/null | grep -v "Already up to date" || true
+                fi
+
+                python3 -c "
+import json, sys, os, subprocess
+from datetime import datetime, timedelta, timezone
+
+home = os.path.expanduser('~')
+me = subprocess.run(['git', 'config', 'user.name'], capture_output=True, text=True).stdout.strip() or os.environ.get('USER', '?')
+cutoff = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+
+# Parse team log
+entries = []
+with open('$TEAM_LOG') as f:
+    for line in f:
+        try:
+            e = json.loads(line)
+            if e.get('when','') >= cutoff and e.get('type') != 'init':
+                entries.append(e)
+        except: pass
+
+# Separate blockers
+blockers = [e for e in entries if e.get('type') == 'blocker']
+
+# Group by person
+people = {}
+for e in entries:
+    who = e.get('who','?')
+    if who not in people:
+        people[who] = []
+    people[who].append(e)
+
+print(f'\n  \033[1mTeam Standup - $(date +%Y-%m-%d)\033[0m')
+print('  ' + '=' * 40)
+
+# Team activity
+if entries:
+    print(f'\n  \033[1;36mTeam (last 48h)\033[0m')
+    for who, evts in people.items():
+        marker = ' (you)' if who == me else ''
+        for e in evts[-3:]:
+            when = e.get('when','')[:16].replace('T',' ')
+            etype = e.get('type','')
+            msg = e.get('msg','')
+            color = {'decision':'\033[0;36m','finding':'\033[0;33m','blocker':'\033[0;31m','done':'\033[0;32m','handoff':'\033[0;35m'}.get(etype, '\033[0m')
+            print(f'    \033[1m@{who}\033[0m{marker} {color}[{etype}]\033[0m {msg}')
+else:
+    print('\n  No team activity in the last 48h.')
+
+# Blockers
+if blockers:
+    print(f'\n  \033[1;31mBlockers\033[0m')
+    for e in blockers:
+        print(f'    @{e.get(\"who\",\"?\")} {e.get(\"msg\",\"\")}')
+
+# Planning files
+plan_exists = os.path.exists('task_plan.md')
+if plan_exists:
+    with open('task_plan.md') as f:
+        content = f.read()
+    in_progress = content.count('in_progress')
+    pending = content.count('pending')
+    if in_progress or pending:
+        print(f'\n  \033[1;33mPlanning\033[0m')
+        print(f'    task_plan.md: {in_progress} in progress, {pending} pending')
+
+# Your recent sessions
+print(f'\n  \033[1;35mYour recent sessions here\033[0m')
+sys.stdout.flush()
+os.system('ccs ls here 3 2>/dev/null | head -12 | tail -n +2')
+print()
+" 2>&1
+                ;;
             *)
                 echo "Unknown team command: $subcmd"
-                echo "Usage: ccs team [show|log|search|init]"
+                echo "Usage: ccs team [show|log|search|sync|standup|init]"
                 exit 1
                 ;;
         esac

@@ -48,7 +48,7 @@ _ccs() {
             ;;
         team)
             if (( CURRENT == 3 )); then
-                local -a teamcmds=('log:Log a decision/finding/blocker' 'search:Search team log' 'sync:Commit and push team log' 'init:Initialize team mode' 'show:Show recent activity')
+                local -a teamcmds=('standup:Morning team standup' 'log:Log a decision/finding/blocker' 'search:Search team log' 'sync:Commit and push team log' 'init:Initialize team mode' 'show:Show recent activity')
                 _describe 'team command' teamcmds
             elif (( CURRENT == 4 )) && [[ "${words[3]}" == "log" ]]; then
                 local -a types=('d:Decision' 'f:Finding' 'b:Blocker' 'done:Completed work' 'h:Handoff' 'decision:Technical choice' 'finding:Discovery' 'blocker:Blocking issue' 'handoff:Passing to teammate')
