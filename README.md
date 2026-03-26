@@ -26,9 +26,10 @@ curl -fsSL https://raw.githubusercontent.com/bluzername/claude-code-power-stack/
 | Tool | What it solves | How it works |
 |------|---------------|-------------|
 | **[Ghost](https://github.com/wcatz/ghost)** | "I already figured this out last week" | MCP server that auto-captures decisions, mistakes, and patterns per project |
-| **[cc-conversation-search](https://github.com/akatz-ai/cc-conversation-search)** | "Where was I working on X?" | Cross-project semantic search across all Claude Code conversations |
+| **[cc-conversation-search](https://github.com/akatz-ai/cc-conversation-search)** | "Where was I working on X?" | Cross-project semantic search via `ccs` CLI |
 | **Session naming** | "Which session was the auth refactor?" | `/rename-session` command with structured naming convention |
 | **Planning-with-files** | "I lost track halfway through" | File-based working memory for complex, multi-step tasks |
+| **Team Mode** | "What did my teammate decide?" | Shared append-only log via git (`ccs team`) |
 
 ### The problem this solves
 
@@ -39,6 +40,7 @@ Without                              With Power Stack
 "Which session had the auth work?"   ccs "auth" finds it in seconds
 "Where was I in this feature?"       task_plan.md says Phase 3, next: tests
 "I need to re-research everything"   findings.md has all your notes
+"What did my teammate decide?"       ccs team shows their log entries
 ```
 
 Ghost and cc-conversation-search handle the **between-sessions** problem.
@@ -433,8 +435,8 @@ Coming back after days/weeks?
 | Re-index conversations | `ccs ix` |
 | **Team** | |
 | Init team mode | `ccs team init` |
-| Log a decision | `ccs team log decision "chose RS256"` |
-| Log a blocker | `ccs team log blocker "CI fails on ARM"` |
+| Log a decision | `ccs team log d "chose RS256"` |
+| Log a blocker | `ccs team log b "CI fails on ARM"` |
 | Team activity | `ccs team` |
 | Search team log | `ccs team search "auth"` |
 | Sync team log | `ccs team sync` |

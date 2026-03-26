@@ -14,6 +14,7 @@
 set -euo pipefail
 
 CCS_VERSION="1.3.0"
+# Short aliases for team log: d=decision, f=finding, b=blocker, h=handoff
 CCS_CACHE="${HOME}/.ccs_last_results"
 CCS_REPO="${HOME}/.ccs_repo_path"
 
@@ -41,7 +42,7 @@ case "$cmd" in
         echo "  ccs doctor               Health check (Ghost, Ollama, index)"
         echo "  ccs cheat                Quick reference card in terminal"
         echo "  ccs team                 Show recent team activity"
-        echo "  ccs team log <msg>       Log a decision/finding/blocker"
+        echo "  ccs team log d <msg>     Log a decision (or f/b/done/h)"
         echo "  ccs team search <query>  Search team log"
         echo "  ccs team sync            Commit and push team log"
         echo "  ccs team init            Initialize team mode in current project"
@@ -387,8 +388,7 @@ print()
         echo ""
         echo -e "  ${Y}TEAM (git-shared, append-only)${N}"
         echo -e "    ccs team               Show recent team activity"
-        echo -e "    ccs team log <msg>      Log a decision (auto-detects your name)"
-        echo -e "    ccs team log blocker .. Log a blocker"
+        echo -e "    ccs team log d <msg>    Log a decision (d/f/b/done/h)"
         echo -e "    ccs team search <q>    Search team log"
         echo -e "    ccs team sync          Commit + push team log"
         echo -e "    ccs team init          Initialize team mode"
@@ -432,15 +432,15 @@ print()
                 entry_type="decision"
                 msg=""
                 case "${1:-}" in
-                    decision|finding|blocker|done|handoff)
-                        entry_type="$1"
-                        shift
-                        msg="$*"
-                        ;;
+                    d|decision)  entry_type="decision"; shift; msg="$*" ;;
+                    f|finding)   entry_type="finding";  shift; msg="$*" ;;
+                    b|blocker)   entry_type="blocker";  shift; msg="$*" ;;
+                    done)        entry_type="done";     shift; msg="$*" ;;
+                    h|handoff)   entry_type="handoff";  shift; msg="$*" ;;
                     "")
-                        echo "Usage: ccs team log <type> <message>"
-                        echo "Types: decision, finding, blocker, done, handoff"
-                        echo "Example: ccs team log decision \"Using RS256 for JWT tokens\""
+                        echo "Usage: ccs team log [type] <message>"
+                        echo "Types: d(ecision), f(inding), b(locker), done, h(andoff)"
+                        echo "Example: ccs team log d \"Using RS256 for JWT tokens\""
                         exit 1
                         ;;
                     *)

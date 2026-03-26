@@ -32,7 +32,7 @@ _ccs_completions() {
             if [[ ${COMP_CWORD} -eq 2 ]]; then
                 COMPREPLY=($(compgen -W "log search sync init show" -- "$cur"))
             elif [[ ${COMP_CWORD} -eq 3 ]] && [[ "${COMP_WORDS[2]}" == "log" ]]; then
-                COMPREPLY=($(compgen -W "decision finding blocker done handoff" -- "$cur"))
+                COMPREPLY=($(compgen -W "d f b done h decision finding blocker handoff" -- "$cur"))
             fi
             ;;
         *)
