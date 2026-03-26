@@ -412,8 +412,18 @@ print()
             esac
         done
 
+        # Check prerequisites
+        if ! command -v cc-conversation-search &>/dev/null; then
+            echo "cc-conversation-search not installed. Run: ccs update"
+            exit 1
+        fi
+        if [ ! -f "${HOME}/.conversation-search/index.db" ]; then
+            echo "No search index. Building it now..."
+            cc-conversation-search init 2>&1 | tail -3
+        fi
+
         # Run search in JSON mode to extract session IDs
-        json_output=$(cc-conversation-search search "$query" --json --limit "${limit:-10}" "${args[@]}" 2>&1)
+        json_output=$(cc-conversation-search search "$query" --json --limit "${limit:-10}" ${args[@]+"${args[@]}"} 2>&1)
 
         # Parse unique sessions and cache them
         if command -v python3 &>/dev/null; then
@@ -423,8 +433,11 @@ from collections import OrderedDict
 
 try:
     results = json.load(sys.stdin)
-except:
-    print('No results found.', file=sys.stderr)
+except (json.JSONDecodeError, ValueError):
+    results = []
+
+if not results:
+    print('No sessions found for that query.')
     sys.exit(0)
 
 # Deduplicate by session_id, preserve order
@@ -458,7 +471,7 @@ if total > 0:
 " 2>&1
         else
             # Fallback: just run normal search (no numbering)
-            cc-conversation-search search "$query" "${args[@]}"
+            cc-conversation-search search "$query" ${args[@]+"${args[@]}"}
         fi
         ;;
 esac
