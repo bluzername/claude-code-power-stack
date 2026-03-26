@@ -13,12 +13,16 @@
 
 set -euo pipefail
 
+CCS_VERSION="1.1.0"
 CCS_CACHE="${HOME}/.ccs_last_results"
 
 cmd="${1:-help}"
 shift 2>/dev/null || true
 
 case "$cmd" in
+    -v|--version|version)
+        echo "ccs $CCS_VERSION (Claude Code Power Stack)"
+        ;;
     help|-h|--help)
         echo "ccs - Claude Code Search"
         echo ""
