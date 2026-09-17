@@ -17,7 +17,7 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 fail()  { echo -e "${RED}[FAIL]${NC} $*"; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_DIR="${HOME}/.claude"
+CLAUDE_DIR="${CLAUDE_DIR:-${HOME}/.claude}"
 
 echo ""
 echo "Claude Code Power Stack - Updater"
