@@ -67,11 +67,11 @@ If catchup report shows unsynced context:
 
 Before ANY complex task:
 
-1. **Create `task_plan.md`** — Use [templates/task_plan.md](templates/task_plan.md) as reference
-2. **Create `findings.md`** — Use [templates/findings.md](templates/findings.md) as reference
-3. **Create `progress.md`** — Use [templates/progress.md](templates/progress.md) as reference
-4. **Re-read plan before decisions** — Refreshes goals in attention window
-5. **Update after each phase** — Mark complete, log errors
+1. **Create `task_plan.md`** - Use [templates/task_plan.md](templates/task_plan.md) as reference
+2. **Create `findings.md`** - Use [templates/findings.md](templates/findings.md) as reference
+3. **Create `progress.md`** - Use [templates/progress.md](templates/progress.md) as reference
+4. **Re-read plan before decisions** - Refreshes goals in attention window
+5. **Update after each phase** - Mark complete, log errors
 
 > **Note:** Planning files go in your project root, not the skill installation folder.
 
@@ -200,17 +200,17 @@ If you can answer these, your context management is solid:
 
 Copy these templates to start:
 
-- [templates/task_plan.md](templates/task_plan.md) — Phase tracking
-- [templates/findings.md](templates/findings.md) — Research storage
-- [templates/progress.md](templates/progress.md) — Session logging
+- [templates/task_plan.md](templates/task_plan.md) - Phase tracking
+- [templates/findings.md](templates/findings.md) - Research storage
+- [templates/progress.md](templates/progress.md) - Session logging
 
 ## Scripts
 
 Helper scripts for automation:
 
-- `scripts/init-session.sh` — Initialize all planning files
-- `scripts/check-complete.sh` — Verify all phases complete
-- `scripts/session-catchup.py` — Recover context from previous session (v2.2.0)
+- `scripts/init-session.sh` - Initialize all planning files
+- `scripts/check-complete.sh` - Verify all phases complete
+- `scripts/session-catchup.py` - Recover context from previous session (v2.2.0)
 
 ## Advanced Topics
 
@@ -219,7 +219,7 @@ Helper scripts for automation:
 
 ## Security Boundary
 
-This skill uses a PreToolUse hook to re-read `task_plan.md` before every tool call. Content written to `task_plan.md` is injected into context repeatedly — making it a high-value target for indirect prompt injection.
+This skill uses a PreToolUse hook to re-read `task_plan.md` before every tool call. Content written to `task_plan.md` is injected into context repeatedly - making it a high-value target for indirect prompt injection.
 
 | Rule | Why |
 |------|-----|
