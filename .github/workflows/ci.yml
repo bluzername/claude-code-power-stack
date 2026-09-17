@@ -12,68 +12,93 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check shell scripts parse correctly
+      - name: Shell lint
         run: |
-          echo "Checking shell scripts..."
+          scripts="setup.sh install.sh verify.sh uninstall.sh update.sh bin/ccs skills/planning-with-files/scripts/check-complete.sh skills/planning-with-files/scripts/init-session.sh"
+          for f in $scripts; do bash -n "$f"; done
+          # shellcheck disable=SC2086
+          shellcheck -S style $scripts
+
+      - name: Scripts are executable
+        run: |
           for f in setup.sh install.sh verify.sh uninstall.sh update.sh bin/ccs; do
-            echo "  $f"
-            bash -n "$f"
+            [ -x "$f" ] || { echo "FAIL: $f is not executable"; exit 1; }
           done
-          echo "All scripts parse OK"
 
-      - name: Check markdown internal links
+      - name: Python compiles
+        run: python3 -m py_compile docs/generate-pdf.py docs/generate-demo.py scripts/check_readme_anchors.py skills/planning-with-files/scripts/session-catchup.py
+
+      - name: README anchors resolve
+        run: python3 scripts/check_readme_anchors.py
+
+      - name: Command and skill headers
         run: |
-          echo "Checking README.md internal links..."
-          # Extract anchor links from TOC and verify headings exist
-          grep -oP '\(#[a-z0-9-]+\)' README.md | tr -d '()' | while read -r anchor; do
-            heading="${anchor#\#}"
-            # GitHub converts headings: lowercase, spaces to -, strip special chars
-            if ! grep -iqP "^#{1,6}\s+.*$(echo "$heading" | sed 's/-/[- ]/g')" README.md; then
-              echo "  WARNING: anchor $anchor may be broken"
-            fi
+          set -e
+          for f in commands/*.md; do
+            name="$(basename "${f%.md}")"
+            head -1 "$f" | grep -q "^## /$name " || { echo "$f: first line must be '## /$name - ...'"; exit 1; }
           done
-          echo "Link check done"
+          f=skills/planning-with-files/SKILL.md
+          head -1 "$f" | grep -qx -- '---' || { echo "$f: missing frontmatter"; exit 1; }
+          grep -q '^name: planning-with-files$' "$f"
+          grep -q '^description: ' "$f"
+          echo "headers ok"
 
-      - name: Verify repo structure
+      - name: Required files present
         run: |
-          echo "Checking required files exist..."
-          files=(
-            "setup.sh"
-            "install.sh"
-            "verify.sh"
-            "uninstall.sh"
-            "update.sh"
-            "bin/ccs"
-            "commands/rename-session.md"
-            "commands/standup.md"
-            "rules/session-naming.md"
-            "skills/planning-with-files/SKILL.md"
-            "templates/claude-md-snippet.md"
-            "completions/_ccs"
-            "completions/ccs.bash"
-            "docs/cheatsheet.md"
-            "docs/cheatsheet.pdf"
-            "LICENSE"
-          )
           missing=0
-          for f in "${files[@]}"; do
-            if [ ! -f "$f" ]; then
-              echo "  MISSING: $f"
-              missing=$((missing + 1))
-            fi
+          for f in setup.sh install.sh verify.sh uninstall.sh update.sh bin/ccs \
+                   commands/rename-session.md commands/standup.md commands/wrapup.md \
+                   commands/team-log.md commands/team-standup.md rules/session-naming.md \
+                   skills/planning-with-files/SKILL.md templates/claude-md-snippet.md \
+                   completions/_ccs completions/ccs.bash docs/cheatsheet.md docs/cheatsheet.pdf \
+                   docs/requirements.txt LICENSE; do
+            [ -f "$f" ] || { echo "MISSING: $f"; missing=$((missing + 1)); }
           done
-          if [ "$missing" -gt 0 ]; then
-            echo "$missing files missing!"
-            exit 1
-          fi
-          echo "All required files present"
+          [ "$missing" -eq 0 ]
 
-      - name: Check scripts are executable
+      - name: Local-only install, verify and uninstall against a temp CLAUDE_DIR
         run: |
-          for f in setup.sh install.sh verify.sh uninstall.sh update.sh bin/ccs; do
-            if [ ! -x "$f" ]; then
-              echo "FAIL: $f is not executable"
-              exit 1
-            fi
-          done
-          echo "All scripts are executable"
+          set -e
+          export CLAUDE_DIR="$RUNNER_TEMP/claude"
+          bash install.sh --local-only
+          for c in commands/*.md; do test -f "$CLAUDE_DIR/commands/$(basename "$c")"; done
+          test -f "$CLAUDE_DIR/skills/planning-with-files/SKILL.md"
+          test -f "$CLAUDE_DIR/rules/common/session-naming.md"
+          bash install.sh --local-only
+          test "$(grep -c 'Memory & Context System' "$CLAUDE_DIR/CLAUDE.md")" = 1
+          bash verify.sh --local-only
+          bash uninstall.sh --yes --local-only
+          for c in commands/*.md; do test ! -e "$CLAUDE_DIR/commands/$(basename "$c")"; done
+          test ! -e "$CLAUDE_DIR/rules/common/session-naming.md"
+          echo "install/verify/uninstall ok"
+
+      - name: ccs runs without its optional dependencies
+        run: |
+          bash bin/ccs --version
+          bash bin/ccs help > /dev/null
+
+      - name: No em or en dashes
+        run: |
+          if grep -rnP '[\x{2013}\x{2014}]' --include='*.md' --include='*.sh' --include='*.py' --include='*.yml' --include='ccs' . ; then
+            echo "dash characters found"; exit 1
+          fi
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: System libraries for WeasyPrint
+        run: sudo apt-get update -q && sudo apt-get install -y -q libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+      - name: Build the cheatsheet PDF
+        run: |
+          pip install -r docs/requirements.txt
+          cd docs && python3 generate-pdf.py
+          test -s cheatsheet.pdf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cheatsheet
+          path: docs/cheatsheet.pdf
