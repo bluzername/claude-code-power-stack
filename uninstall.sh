@@ -41,8 +41,12 @@ echo ""
 
 # Remove MCP registration (check both scopes)
 if [ "$LOCAL_ONLY" -eq 0 ] && command -v claude &>/dev/null; then
-    claude mcp remove ghost -s user 2>/dev/null && info "Removed Ghost MCP registration (user scope)" || true
-    claude mcp remove ghost -s project 2>/dev/null && info "Removed Ghost MCP registration (project scope)" || true
+    if claude mcp remove ghost -s user 2>/dev/null; then
+        info "Removed Ghost MCP registration (user scope)"
+    fi
+    if claude mcp remove ghost -s project 2>/dev/null; then
+        info "Removed Ghost MCP registration (project scope)"
+    fi
     if ! claude mcp list 2>&1 | grep -q ghost; then
         info "Ghost MCP fully removed"
     else
