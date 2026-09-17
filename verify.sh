@@ -27,10 +27,10 @@ check() {
     shift
     if "$@" &>/dev/null; then
         echo -e "  ${GREEN}PASS${NC}  $desc"
-        ((PASS++))
+        PASS=$((PASS + 1))
     else
         echo -e "  ${RED}FAIL${NC}  $desc"
-        ((FAIL++))
+        FAIL=$((FAIL + 1))
     fi
 }
 
@@ -39,10 +39,10 @@ check_warn() {
     shift
     if "$@" &>/dev/null; then
         echo -e "  ${GREEN}PASS${NC}  $desc"
-        ((PASS++))
+        PASS=$((PASS + 1))
     else
         echo -e "  ${YELLOW}WARN${NC}  $desc"
-        ((WARN++))
+        WARN=$((WARN + 1))
     fi
 }
 

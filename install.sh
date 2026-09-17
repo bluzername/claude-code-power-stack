@@ -251,7 +251,7 @@ for cmd_file in "$SCRIPT_DIR"/commands/*.md; do
     [ -f "$cmd_file" ] || continue
     cp "$cmd_file" "$CLAUDE_DIR/commands/"
     ok "Installed /$(basename "${cmd_file%.md}") command"
-    ((cmd_count++))
+    cmd_count=$((cmd_count + 1))
 done
 if [ "$cmd_count" -eq 0 ]; then
     warn "No commands found in repo"

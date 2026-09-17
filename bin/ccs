@@ -270,47 +270,47 @@ print()
         # Ghost binary
         if command -v ghost &>/dev/null; then
             echo -e "  $OK  ghost binary on PATH"
-            ((pass++))
+            pass=$((pass + 1))
         else
             echo -e "  $FAIL  ghost binary not found"
-            ((fail++))
+            fail=$((fail + 1))
         fi
 
         # Ghost MCP registered
         if claude mcp list 2>&1 | grep -q "ghost"; then
             echo -e "  $OK  Ghost MCP registered"
-            ((pass++))
+            pass=$((pass + 1))
         else
             echo -e "  $FAIL  Ghost MCP not registered (run: claude mcp add ghost -s user -- \$(which ghost) mcp)"
-            ((fail++))
+            fail=$((fail + 1))
         fi
 
         # Ollama running
         if curl -s --max-time 2 http://localhost:11434/api/tags &>/dev/null; then
             echo -e "  $OK  Ollama server running"
-            ((pass++))
+            pass=$((pass + 1))
 
             # Embedding model
             if curl -s http://localhost:11434/api/tags 2>/dev/null | grep -q "nomic-embed-text"; then
                 echo -e "  $OK  nomic-embed-text model available"
-                ((pass++))
+                pass=$((pass + 1))
             else
                 echo -e "  $FAIL  nomic-embed-text model missing (run: ollama pull nomic-embed-text)"
-                ((fail++))
+                fail=$((fail + 1))
             fi
         else
             echo -e "  $FAIL  Ollama not running (run: ollama serve)"
             echo -e "  $WARN  skipping model check"
-            ((fail++))
+            fail=$((fail + 1))
         fi
 
         # cc-conversation-search
         if command -v cc-conversation-search &>/dev/null; then
             echo -e "  $OK  cc-conversation-search installed"
-            ((pass++))
+            pass=$((pass + 1))
         else
             echo -e "  $FAIL  cc-conversation-search not found"
-            ((fail++))
+            fail=$((fail + 1))
         fi
 
         # Search index
@@ -320,33 +320,33 @@ print()
             age_hours=$(( age_seconds / 3600 ))
             if [ "$age_hours" -lt 24 ]; then
                 echo -e "  $OK  search index fresh (updated ${age_hours}h ago)"
-                ((pass++))
+                pass=$((pass + 1))
             else
                 echo -e "  $WARN  search index stale (${age_hours}h old - run: ccs ix)"
-                ((pass++))
+                pass=$((pass + 1))
             fi
         else
             echo -e "  $FAIL  search index missing (run: ccs ix)"
-            ((fail++))
+            fail=$((fail + 1))
         fi
 
         # ccs shortcut
         if command -v ccs &>/dev/null; then
             echo -e "  $OK  ccs shortcut on PATH"
-            ((pass++))
+            pass=$((pass + 1))
         else
             echo -e "  $FAIL  ccs not on PATH"
-            ((fail++))
+            fail=$((fail + 1))
         fi
 
         # Commands installed
         cmd_count=0
         for cmd in rename-session standup wrapup team-log team-standup; do
-            [ -f "${HOME}/.claude/commands/${cmd}.md" ] && ((cmd_count++))
+            [ -f "${HOME}/.claude/commands/${cmd}.md" ] && cmd_count=$((cmd_count + 1))
         done
         if [ "$cmd_count" -eq 5 ]; then
             echo -e "  $OK  all slash commands installed ($cmd_count/5)"
-            ((pass++))
+            pass=$((pass + 1))
         else
             echo -e "  $WARN  $cmd_count/5 slash commands installed (run: ccs update)"
         fi
@@ -357,7 +357,7 @@ print()
             if [ -n "$latest" ]; then
                 if [ "$CCS_VERSION" = "$latest" ]; then
                     echo -e "  $OK  ccs v$CCS_VERSION (latest)"
-                    ((pass++))
+                    pass=$((pass + 1))
                 else
                     echo -e "  $WARN  ccs v$CCS_VERSION (v$latest available - run: ccs update)"
                 fi
