@@ -9,6 +9,15 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+CLAUDE_DIR="${CLAUDE_DIR:-${HOME}/.claude}"
+LOCAL_ONLY="${POWER_STACK_LOCAL_ONLY:-0}"
+for arg in "$@"; do
+    case "$arg" in
+        --local-only) LOCAL_ONLY=1 ;;
+        *) echo "Unknown argument: $arg" >&2; exit 2 ;;
+    esac
+done
+
 PASS=0
 FAIL=0
 WARN=0
@@ -42,6 +51,7 @@ echo "Claude Code Power Stack - Verification"
 echo "======================================="
 echo ""
 
+if [ "$LOCAL_ONLY" -eq 0 ]; then
 echo "Binaries:"
 check "ghost on PATH" command -v ghost
 check "cc-conversation-search on PATH" command -v cc-conversation-search
@@ -65,11 +75,17 @@ check "search index exists" test -f "${HOME}/.conversation-search/index.db"
 check_warn "search returns results" cc-conversation-search search "test" --limit 1
 echo ""
 
+fi # LOCAL_ONLY
+
 echo "Claude Code config:"
-check "/rename-session command" test -f "${HOME}/.claude/commands/rename-session.md"
-check "session-naming rule" test -f "${HOME}/.claude/rules/common/session-naming.md"
-check_warn "planning-with-files skill" test -d "${HOME}/.claude/skills/planning-with-files"
-check_warn "CLAUDE.md has memory section" grep -q "Memory & Context System" "${HOME}/.claude/CLAUDE.md"
+check "/rename-session command" test -f "${CLAUDE_DIR}/commands/rename-session.md"
+check "/standup command" test -f "${CLAUDE_DIR}/commands/standup.md"
+check "/wrapup command" test -f "${CLAUDE_DIR}/commands/wrapup.md"
+check "/team-log command" test -f "${CLAUDE_DIR}/commands/team-log.md"
+check "/team-standup command" test -f "${CLAUDE_DIR}/commands/team-standup.md"
+check "session-naming rule" test -f "${CLAUDE_DIR}/rules/common/session-naming.md"
+check_warn "planning-with-files skill" test -d "${CLAUDE_DIR}/skills/planning-with-files"
+check_warn "CLAUDE.md has memory section" grep -q "Memory & Context System" "${CLAUDE_DIR}/CLAUDE.md"
 echo ""
 
 echo "---------------------------------------"

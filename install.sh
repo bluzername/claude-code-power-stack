@@ -5,7 +5,21 @@ set -euo pipefail
 # https://github.com/bluzername/claude-code-power-stack
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_DIR="${HOME}/.claude"
+CLAUDE_DIR="${CLAUDE_DIR:-${HOME}/.claude}"
+LOCAL_ONLY="${POWER_STACK_LOCAL_ONLY:-0}"
+
+for arg in "$@"; do
+    case "$arg" in
+        --local-only) LOCAL_ONLY=1 ;;
+        -h|--help)
+            echo "Usage: install.sh [--local-only]"
+            echo "  --local-only  Only install commands, skills, rules and the CLAUDE.md snippet"
+            echo "                into \$CLAUDE_DIR (default ~/.claude). Skips Ghost, Ollama,"
+            echo "                cc-conversation-search, the ccs binary and shell completions."
+            exit 0 ;;
+        *) echo "Unknown argument: $arg" >&2; exit 2 ;;
+    esac
+done
 
 # Colors
 RED='\033[0;31m'
@@ -31,22 +45,22 @@ echo ""
 
 MISSING=0
 
-if ! command -v claude &>/dev/null; then
-    fail "Claude Code CLI not found. Install it first: https://docs.anthropic.com/en/docs/claude-code"
+if [ "$LOCAL_ONLY" -eq 0 ] && ! command -v claude &>/dev/null; then
+    fail "Claude Code CLI not found. Install it first: https://code.claude.com/docs"
     MISSING=1
 fi
 
-if ! command -v go &>/dev/null && ! command -v brew &>/dev/null; then
+if [ "$LOCAL_ONLY" -eq 0 ] && ! command -v go &>/dev/null && ! command -v brew &>/dev/null; then
     fail "Neither Go nor Homebrew found. Need one to install Ghost."
     MISSING=1
 fi
 
-if ! command -v uv &>/dev/null && ! command -v pip &>/dev/null; then
+if [ "$LOCAL_ONLY" -eq 0 ] && ! command -v uv &>/dev/null && ! command -v pip &>/dev/null; then
     fail "Neither uv nor pip found. Need one to install cc-conversation-search."
     MISSING=1
 fi
 
-if ! command -v ollama &>/dev/null; then
+if [ "$LOCAL_ONLY" -eq 0 ] && ! command -v ollama &>/dev/null; then
     fail "Ollama not found. Ghost requires Ollama for embeddings."
     fail "  Install: https://ollama.com/ or brew install ollama"
     MISSING=1
@@ -58,7 +72,9 @@ if [ "$MISSING" -eq 1 ]; then
     exit 1
 fi
 
-if [ ! -d "$CLAUDE_DIR" ]; then
+if [ "$LOCAL_ONLY" -eq 1 ]; then
+    mkdir -p "$CLAUDE_DIR"
+elif [ ! -d "$CLAUDE_DIR" ]; then
     fail "Claude Code config directory not found at $CLAUDE_DIR"
     fail "Run Claude Code at least once first."
     exit 1
@@ -66,6 +82,8 @@ fi
 
 ok "Prerequisites check passed"
 echo ""
+
+if [ "$LOCAL_ONLY" -eq 0 ]; then
 
 # ------------------------------------------
 # Step 1: Install Ghost
@@ -218,6 +236,8 @@ fi
 
 echo ""
 
+fi # LOCAL_ONLY
+
 # ------------------------------------------
 # Step 4: Copy commands, skills, and rules
 # ------------------------------------------
@@ -256,6 +276,8 @@ else
 fi
 
 echo ""
+
+if [ "$LOCAL_ONLY" -eq 0 ]; then
 
 # ------------------------------------------
 # Step 5: Install ccs shortcut
@@ -303,6 +325,8 @@ if [ -d "$SCRIPT_DIR/completions" ]; then
 fi
 
 echo ""
+
+fi # LOCAL_ONLY
 
 # ------------------------------------------
 # Step 6: Update CLAUDE.md
